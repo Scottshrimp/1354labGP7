@@ -20,7 +20,7 @@ Run commands from `projects/standalone/` (this project's root):
 - `python -m unittest discover -s src/tests -v`: verify packed assets, playback scheduling, pauses, and full-game scoring.
 - `python src/chart_studio.py`: launch the editor. Desktop preview requires Tkinter and `pygame`; compressed audio imports additionally require FFmpeg.
 
-Import `src/deploy/main.py` through the micro:bit Python editor, then flash it. Device gameplay requires no desktop process or additional files.
+Use Chrome to open the micro:bit Python Editor, import `src/deploy/main.py`, and flash manually with Send to micro:bit. Device gameplay requires no desktop process or additional files. Keep flashing in the browser; do not add command-line flashing tools.
 
 ## Coding Style & Naming Conventions
 

@@ -6,12 +6,12 @@ micro:bit V2 + GE1354 GamePad 负责菜单、方向键输入、判定和双 OLED
 
 ## 安装与启动
 
-1. 准备 Python 3.10+，创建并激活虚拟环境。
-2. 安装 Python 依赖：`python -m pip install -r projects/pc-integrated/requirements.txt`。
+1. 准备 Python 3.13，可使用本机共享环境。
+2. 新环境安装 Python 依赖：`python -m pip install --user -r projects/pc-integrated/requirements.txt`。本机已安装，可跳过；Homebrew 的安装说明见 [根目录 README](../../README.md)。
 3. 安装 FFmpeg 并确保 `ffmpeg -version` 可运行。首次播放或音频更新时会生成 `songs/<id>/cache.wav`。
 4. 按 [songs/README.md](songs/README.md) 放置音频文件。GitHub 仓库不包含音频和缓存。
-5. 在 [micro:bit Python 编辑器](https://python.microbit.org/) 中打开本目录的 `microbit_main.py` 并刷入设备。
-6. 关闭浏览器串口监视器，连接 GamePad 后启动电脑主机：
+5. 用 Chrome 打开 [micro:bit Python Editor](https://python.microbit.org/)，导入本目录的 `microbit_main.py`，点击 Send to micro:bit 手动刷入设备。启动时让摇杆回中。
+6. 关闭编辑器的串口连接，连接 GamePad 后启动电脑主机：
 
 ```sh
 python projects/pc-integrated/pc_player.py --port COM3

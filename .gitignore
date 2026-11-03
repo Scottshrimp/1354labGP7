@@ -11,6 +11,7 @@
 *.flac
 
 # Python environments and generated files.
+*.hex
 __pycache__/
 *.py[cod]
 .venv/

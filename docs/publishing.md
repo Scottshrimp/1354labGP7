@@ -5,7 +5,7 @@
 - `projects/pc-integrated/`：最新版 PC 整合版 v4.1、歌曲描述和谱面。
 - `projects/standalone/`：独立运行版源码、构建器、编辑器、测试、MIDI 和生成的刷入文件。
 - `tools/chart-studio/`：音频版 Chart Studio v1.3。
-- 根目录 README、依赖清单、忽略规则和桌面 CI。
+- 根目录 README、手动刷入说明、硬件验证记录、依赖清单、忽略规则和桌面 CI。
 
 `Legacy/` 保持原样且不加入 Git。`local-assets/` 保存从根目录和 PC 包根目录移出的原始/重复音频，同样不加入 Git。PC 歌曲目录的音频和 WAV 缓存仍在原歌曲目录中，仅改用 ASCII 路径；这些音频和缓存也被忽略。没有删除历史版本或录音。
 
@@ -45,12 +45,14 @@ python projects/standalone/src/tools/build_song.py
 
 ## 提交与上传
 
-本次整理已于 2026-11-03 完成本地检查：保留原有 215 个文件；发布清单为 35 个文件、约 228 KB；新路径和不含本地素材的干净导出均通过 11 项独立版测试，重建结果逐字节一致。PC 版两首歌曲的描述和谱面可读取，本地音频路径匹配。两版 Python 语法和 README 内部文件链接检查通过，常见凭据模式扫描未发现匹配。首次 GitHub Actions 运行中，Python 3.10 和 3.13 均通过 11 项测试及构建；针对 3.10 的括号格式差异，文件快照检查改用 3.13 为基准。实体设备尚未验收。
+2026-11-03 已验证 11 项独立版桌面测试及构建一致性。PC 版两首歌曲的描述和谱面可读取，本地音频路径匹配。原有 CI 的 Python 3.10、3.13 检查已在远端通过；生成文件快照以 3.13 为基准。Standalone 已实机启动并基本可玩，但外接左方向键问题尚待解决，详见 [硬件验证记录](hardware-testing.md)。
+
+设备程序统一通过 Chrome 的 [micro:bit Python Editor](https://python.microbit.org/) 手动刷入。构建器只负责更新 Python 源码中的歌曲数据和 `src/deploy/main.py`；本仓库不再维护命令行刷写工具或运行时下载缓存。
 
 目标仓库为 [Scottshrimp/1354labGP7](https://github.com/Scottshrimp/1354labGP7)，本地 `origin` 已配置到该地址，发布分支为 `main`。首次上传保留远端原有的初始化提交；后续修改可按以下命令检查并提交：
 
 ```sh
-git add README.md .gitignore .gitattributes .github docs projects tools
+git add -A
 git diff --cached --stat
 git diff --cached --name-only
 git commit -m "Describe the project changes"

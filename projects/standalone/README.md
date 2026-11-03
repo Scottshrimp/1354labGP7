@@ -6,7 +6,7 @@ micro:bit V2 + GE1354 GamePad 独立运行版，源自 Rhythm Hold v4.1。设备
 
 ## 刷入和操作
 
-在 [micro:bit Python 编辑器](https://python.microbit.org/) 打开 `projects/standalone/src/deploy/main.py` 并刷入 micro:bit V2。只需这一个文件，不需要上传 MIDI 或 JSON。
+用 Chrome 打开 [micro:bit Python Editor](https://python.microbit.org/)，导入 `projects/standalone/src/deploy/main.py`，点击 Send to micro:bit 手动刷入 micro:bit V2。只需这一个文件，不需要上传 MIDI 或 JSON。启动校准时请让摇杆回中。
 
 - 摇杆右推开始；方向键跟随箭头。
 - 左推暂停，右推恢复；暂停时下推退出；结果页左推返回。
@@ -35,4 +35,4 @@ python -m unittest discover -s projects/standalone/src/tests -v
 
 歌曲源文件为用户提供的 MIDI；转换器当前固定读取第 3 轨（从 0 开始编号），并非任意 MIDI 的通用导入器。素材来源和再分发权限见仓库 [发布说明](../../docs/publishing.md)。
 
-桌面逻辑模拟不能代替硬件验证，发布前应检查 P12 声音、方向键、摇杆、双 OLED、振动和暂停同步。更多编辑器说明见 [chart_studio.md](docs/chart_studio.md)。
+桌面逻辑模拟不能代替硬件验证，发布前应检查 P12 声音、方向键、摇杆、双 OLED、振动和暂停同步。当前方向键待查问题见 [硬件验证记录](../../docs/hardware-testing.md)。更多编辑器说明见 [chart_studio.md](docs/chart_studio.md)。
