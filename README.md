@@ -57,6 +57,25 @@ python projects/pc-integrated/pc_player.py --port COM3
 
 **谱面编辑**：PC 版可用 `python tools/chart-studio/chart_studio.py`；独立版使用 `python projects/standalone/src/chart_studio.py`，支持通过同一个转换器试听 MIDI。编辑器依赖和操作见各自 README。
 
+## 命令行刷入 micro:bit
+
+先在本项目虚拟环境中安装刷写工具（Windows 使用 `.venv\Scripts\python`）：
+
+```sh
+.venv/bin/python -m pip install uflash==2.0.0
+```
+
+连接 USB 数据线，在仓库根目录执行以下任意一条命令。脚本会自动使用 `.venv`，无需先激活环境；刷写会替换设备当前程序。
+
+```sh
+./write-microbit.py                  # 显示两版选择菜单
+./write-microbit.py pc               # PC 整合版
+./write-microbit.py standalone       # 独立运行版
+./write-microbit.py standalone --hex-only  # 仅生成 HEX，不写设备
+```
+
+也可以使用 `python3 write-microbit.py pc`（Windows 用 `python`）。默认自动查找 MICROBIT 挂载盘；必要时加 `--mount /Volumes/MICROBIT`。生成的 HEX 放在已忽略的 `build/hex/` 下。Standalone 使用现有 `src/deploy/main.py`；编辑谱面或设备源码后，先运行下方构建命令再刷入。
+
 ## 验证
 
 ```sh
