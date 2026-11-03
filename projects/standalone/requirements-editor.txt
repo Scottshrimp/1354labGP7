@@ -1,0 +1,2 @@
+# Optional desktop audio preview; building/testing needs only the standard library.
+pygame>=2.5,<3

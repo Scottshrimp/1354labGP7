@@ -1,0 +1,4 @@
+MEGALOVANIA Standalone — Gentle Mode
+User-supplied MIDI lead, packed melody and chart embedded in microbit_main.py.
+Audio P12; joystick P0/P1; D-pad P13/P11/P15/P5; vibration P8.
+Derived from Rhythm Hold v4.1; PC streaming and other songs removed.

@@ -1,0 +1,8 @@
+{
+  "title": "MEGALOVANIA - Gentle",
+  "audio": "source.mid",
+  "chart": "chart.json",
+  "duration_ms": 159196,
+  "playback": "on-device single-voice melody",
+  "melody_track": 3
+}

@@ -1,0 +1,32 @@
+# Historical work and original/duplicate audio stay local.
+/Legacy/
+/local-assets/
+
+# Audio recordings and generated playback/preview caches.
+*.aac
+*.wav
+*.mp3
+*.m4a
+*.ogg
+*.flac
+
+# Python environments and generated files.
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+
+# Machine-specific files and credentials.
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
