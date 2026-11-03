@@ -31,6 +31,8 @@ python -m unittest discover -s projects/standalone/src/tests -v
 
 普通构建保留编辑后的谱面；加 `--make-chart` 会覆盖为默认简单谱面。单键间隔至少 1000 ms，不允许同时输入。`src/microbit_main.py` 中的歌曲数据和 `src/deploy/main.py` 都由构建器生成，请勿手工修改生成部分。
 
+提交生成文件时以 Python 3.13 为基准。其他受支持版本仍可构建，但标准库 `ast.unparse` 可能生成不同的括号格式；构建器会检查生成代码的 AST 与源码一致。
+
 歌曲源文件为用户提供的 MIDI；转换器当前固定读取第 3 轨（从 0 开始编号），并非任意 MIDI 的通用导入器。素材来源和再分发权限见仓库 [发布说明](../../docs/publishing.md)。
 
 桌面逻辑模拟不能代替硬件验证，发布前应检查 P12 声音、方向键、摇杆、双 OLED、振动和暂停同步。更多编辑器说明见 [chart_studio.md](docs/chart_studio.md)。

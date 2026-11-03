@@ -23,4 +23,7 @@ jobs:
       - name: Rebuild standalone firmware
         run: python projects/standalone/src/tools/build_song.py
       - name: Verify generated files are current
+        # ast.unparse formatting differs across Python versions.
+        # Python 3.13 is the reference for committed deployment snapshots.
+        if: matrix.python-version == '3.13'
         run: git diff --exit-code -- projects/standalone/src/microbit_main.py projects/standalone/src/deploy/main.py projects/standalone/music/megalovania/song.json

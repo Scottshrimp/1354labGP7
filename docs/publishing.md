@@ -41,11 +41,11 @@ python projects/standalone/src/tools/build_song.py
 
 第一条应输出本项目目录 `1354Labdev`，而非用户主目录。该目录原先没有独立的 Git 元数据，误继承了父目录仓库；本次建立本项目自己的 Git 仓库，未继承父目录的 remote。
 
-`.github/workflows/checks.yml` 在 push 和 pull request 时检查两版 Python 语法、独立版测试，以及重新构建后生成文件是否有差异。CI 不需要 PC 音频、pygame 或实体设备。
+`.github/workflows/checks.yml` 在 push 和 pull request 时，使用 Python 3.10 和 3.13 检查两版 Python 语法、独立版测试及重新构建。生成文件的逐字节一致性以 Python 3.13 为基准，因为不同版本的 `ast.unparse` 会产生不同的括号格式；各版本构建器均检查生成代码的 AST 与源码一致。CI 不需要 PC 音频、pygame 或实体设备。
 
 ## 提交与上传
 
-本次整理已于 2026-11-03 完成本地检查：保留原有 215 个文件；发布清单为 35 个文件、约 228 KB；新路径和不含本地素材的干净导出均通过 11 项独立版测试，重建结果逐字节一致。PC 版两首歌曲的描述和谱面可读取，本地音频路径匹配。两版 Python 语法和 README 内部文件链接检查通过，常见凭据模式扫描未发现匹配。GitHub Actions 尚未在远端运行，实体设备尚未验收。
+本次整理已于 2026-11-03 完成本地检查：保留原有 215 个文件；发布清单为 35 个文件、约 228 KB；新路径和不含本地素材的干净导出均通过 11 项独立版测试，重建结果逐字节一致。PC 版两首歌曲的描述和谱面可读取，本地音频路径匹配。两版 Python 语法和 README 内部文件链接检查通过，常见凭据模式扫描未发现匹配。首次 GitHub Actions 运行中，Python 3.10 和 3.13 均通过 11 项测试及构建；针对 3.10 的括号格式差异，文件快照检查改用 3.13 为基准。实体设备尚未验收。
 
 目标仓库为 [Scottshrimp/1354labGP7](https://github.com/Scottshrimp/1354labGP7)，本地 `origin` 已配置到该地址，发布分支为 `main`。首次上传保留远端原有的初始化提交；后续修改可按以下命令检查并提交：
 
