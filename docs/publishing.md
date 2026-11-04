@@ -2,6 +2,7 @@
 
 ## 当前发布范围
 
+- `projects/unified/`：RAM2 双模式设备程序、PC host、连接协议、单文件构建器和测试；作为当前主要入口。
 - `projects/pc-integrated/`：最新版 PC 整合版 v4.1、歌曲描述和谱面。
 - `projects/standalone/`：独立运行版源码、构建器、编辑器、测试、MIDI 和生成的刷入文件。
 - `tools/chart-studio/`：音频版 Chart Studio v1.3。
@@ -35,19 +36,21 @@
 git rev-parse --show-toplevel
 git status --short
 git ls-files --others --exclude-standard
+python -m unittest discover -s projects/unified/tests -v
+python projects/unified/tools/build.py
 python -m unittest discover -s projects/standalone/src/tests -v
 python projects/standalone/src/tools/build_song.py
 ```
 
 第一条应输出本项目目录 `1354Labdev`，而非用户主目录。该目录原先没有独立的 Git 元数据，误继承了父目录仓库；本次建立本项目自己的 Git 仓库，未继承父目录的 remote。
 
-`.github/workflows/checks.yml` 在 push 和 pull request 时，使用 Python 3.10 和 3.13 检查两版 Python 语法、独立版测试及重新构建。生成文件的逐字节一致性以 Python 3.13 为基准，因为不同版本的 `ast.unparse` 会产生不同的括号格式；各版本构建器均检查生成代码的 AST 与源码一致。CI 不需要 PC 音频、pygame 或实体设备。
+`.github/workflows/checks.yml` 在 push 和 pull request 时，使用 Python 3.10 和 3.13 检查 Python 语法、36 项合并版模拟、11 项独立版模拟及两版重新构建。生成文件的逐字节一致性以 Python 3.13 为基准，因为不同版本的 `ast.unparse` 会产生不同的括号格式；各版本构建器均检查生成代码的 AST 与源码一致。CI 不需要 PC 音频、pygame 或实体设备。
 
 ## 提交与上传
 
-2026-11-03 已验证 11 项独立版桌面测试及构建一致性。PC 版两首歌曲的描述和谱面可读取，本地音频路径匹配。原有 CI 的 Python 3.10、3.13 检查已在远端通过；生成文件快照以 3.13 为基准。Standalone 已实机启动并基本可玩，但外接左方向键问题尚待解决，详见 [硬件验证记录](hardware-testing.md)。
+2026-11-04 合并版 RAM2 已解决启动编译期 MemoryError，用户确认手动重刷后正常。47 项桌面检查覆盖分块启动、连接协议、断线回退、内嵌资源、暂停与整局计分；PC 两首歌曲的本地音频和缓存预检通过。完整 PC 音画同步及历史方向键问题仍待验收，详见[硬件验证记录](hardware-testing.md)。
 
-设备程序统一通过 Chrome 的 [micro:bit Python Editor](https://python.microbit.org/) 手动刷入。构建器只负责更新 Python 源码中的歌曲数据和 `src/deploy/main.py`；本仓库不再维护命令行刷写工具或运行时下载缓存。
+设备程序统一通过 Chrome 的 [micro:bit Python Editor](https://python.microbit.org/) 手动刷入。构建器只更新歌曲数据和单文件产物：合并版 `projects/unified/deploy/main.py`、独立版 `projects/standalone/src/deploy/main.py`；本仓库不再维护命令行刷写工具或运行时下载缓存。
 
 目标仓库为 [Scottshrimp/1354labGP7](https://github.com/Scottshrimp/1354labGP7)，本地 `origin` 已配置到该地址，发布分支为 `main`。首次上传保留远端原有的初始化提交；后续修改可按以下命令检查并提交：
 

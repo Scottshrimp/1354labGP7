@@ -1,6 +1,6 @@
 # 硬件验证记录
 
-记录日期：2026-11-03。设备为 micro:bit V2 和 GE1354 GamePad。后续统一使用 Chrome 的 [micro:bit Python Editor](https://python.microbit.org/) 导入设备 Python 文件并手动刷入。
+记录更新：2026-11-04。设备为 micro:bit V2 和 GE1354 GamePad。后续统一使用 Chrome 的 [micro:bit Python Editor](https://python.microbit.org/) 导入设备 Python 文件并手动刷入。
 
 ## 已确认
 
@@ -24,3 +24,21 @@
 两版均还需要完整实机验收：方向键、摇杆、双 OLED、暂停恢复、计分，以及 PC 版串口音频同步或 Standalone 的 P12 声音、振动。
 
 完整的历史开发进度已归档到本地 `local-assets/notes/PROGRESS-2026-11-03.md`，该目录由 Git 忽略。
+
+## 合并测试版首轮反馈（2026-11-04）
+
+用户手动刷入合并版后，OLED 菜单出现，但 5×5 LED 滚动显示 `MemoryError`，无法操作；尚未取得完整串口 traceback，具体分配失败位置未确认。
+
+第一轮软件调整包括：字体共享、独立旋律按需加载与释放、解包避免整块复制、OLED 刷新去重并定期回收临时对象。新增字体像素一致性、旋律按需分配及释放检查，原游戏/协议模拟继续通过。这轮调整经重刷后仍出现相同问题，后续定位与修复见下节。
+
+## 合并版 RAM2 串口验证（2026-11-04）
+
+第一轮字体/旋律内存优化后用户仍报告同样症状。随后只通过串口诊断和 RAM 执行，未更改设备文件：
+
+- 确认 `main.py` 是本地对应版本，运行时为 micro:bit 2.1.2 / MicroPython 1.18。
+- 软重启捕获 `MemoryError`，没有 Python 行号；进入 REPL 后 GC 空闲约 60 KB、无游戏全局状态。OLED 原画面不能证明新程序已执行。
+- 将同一程序按顶层语句分块编译后，所有块成功执行。初始化后的空闲 RAM 为 35,824 bytes；诊断代码和主循环有少量额外开销。
+- 自动模拟摇杆暂停、退出后空闲 35,488 bytes；加载旋律后 32,448 bytes，释放后恢复 35,488 bytes。旋律共 3,010 bytes。
+- 恢复真实摇杆函数并运行菜单，连续收到正常 HELLO，无 MemoryError。该次诊断仅在 RAM 运行，未改写设备文件。
+
+`projects/unified/deploy/main.py` 已改为单文件小启动器，按相同边界读取自身注释载荷、分块编译并回收临时对象。桌面测试验证实际启动器和完整载荷、AST 重组、块大小及双模式流程。随后用户通过 Chrome 手动重刷 RAM2，并确认正常，启动 MemoryError 问题已解决。完整 PC 音画同步、连续切换及历史外接方向键问题仍待单独验收。

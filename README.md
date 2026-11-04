@@ -1,9 +1,12 @@
 # GE1354 Rhythm Hold
 
-基于 micro:bit V2 和 GE1354 GamePad 的节奏游戏。当前维护两个版本：PC 整合版与独立运行版。
+基于 micro:bit V2 和 GE1354 GamePad 的节奏游戏。已提供双模式合并测试版，原 PC 整合版与独立运行版保留为基线。
+
+[合并实机测试版](projects/unified/README.md)使用一个设备程序：无 host 时独立运行，host 就绪后在菜单进入 PC 模式，PC 断线回独立菜单。RAM2 启动问题已修复并由用户确认，完整 PC 音画同步仍待实机验收；设计见[合并计划](docs/unification-plan.md)。
 
 | 版本 | 运行方式 | 音乐 | 使用说明 |
 | --- | --- | --- | --- |
+| Unified · 实机测试版 | 一个设备文件加一个 PC host；菜单自动切换模式 | 内嵌旋律 / PC 本地音频 | [合并版](projects/unified/README.md) |
 | PC Integrated · v4.1 | micro:bit 通过 USB 串口连接电脑；设备负责操作、判定和显示，电脑播放音频并发送谱面 | 本地音频文件，每首歌一个谱面 | [PC 版](projects/pc-integrated/README.md) |
 | Standalone · Gentle Mode | 刷入一个 Python 文件，设备可脱离电脑运行 | P12 输出内嵌的单音旋律；114 个简单单键提示 | [独立运行版](projects/standalone/README.md) |
 
@@ -11,6 +14,14 @@
 
 ```text
 projects/
+  unified/
+    deploy/main.py         # 合并版唯一刷入文件
+    src/microbit_main.py    # 可读源码
+    pc_host.py             # 合并版 PC host，自动发现串口
+    connection.py
+    protocol.py
+    tools/build.py
+    tests/
   pc-integrated/
     microbit_main.py        # PC 版设备程序
     pc_player.py            # 串口主机和音频播放
@@ -49,6 +60,7 @@ docs/
 
 | 版本 | 导入文件 |
 | --- | --- |
+| Unified（测试） | `projects/unified/deploy/main.py` |
 | PC Integrated | `projects/pc-integrated/microbit_main.py` |
 | Standalone | `projects/standalone/src/deploy/main.py` |
 
@@ -56,6 +68,16 @@ docs/
 5. 启动时让摇杆回中，以便校准。
 
 Standalone 刷入后直接在 GamePad 上运行。PC 版需要关闭编辑器的串口连接，再启动电脑播放器。
+
+## 合并版快速测试
+
+刷入 `projects/unified/deploy/main.py` 后即可运行独立模式。断开 Chrome 的串口连接，再运行：
+
+```sh
+python3 projects/unified/pc_host.py
+```
+
+host 自动发现唯一的 micro:bit；准备就绪后菜单显示 `PC SONGS`。停止 host 后设备约 2.5 秒回到独立菜单。完整测试顺序见[合并版说明](projects/unified/README.md)。
 
 ## PC 播放器
 
@@ -83,13 +105,15 @@ PC 版可用 `python3 tools/chart-studio/chart_studio.py`；独立版使用 `pyt
 ## 验证
 
 ```sh
+python -m unittest discover -s projects/unified/tests -v
+python projects/unified/tools/build.py
 python -m unittest discover -s projects/standalone/src/tests -v
 python projects/standalone/src/tools/build_song.py
 ```
 
 构建默认保留手工谱面；`--make-chart` 会覆盖为默认简单谱面。构建只需 Python 标准库。构建后，将生成的 `projects/standalone/src/deploy/main.py` 重新导入 Chrome Python Editor 手动刷入。
 
-桌面测试覆盖内嵌数据、刷入文件一致性、音乐调度、暂停恢复和整局计分。当前实机结果与未解决的方向键问题见 [硬件验证记录](docs/hardware-testing.md)。
+47 项桌面测试覆盖内嵌数据、刷入文件一致性、音乐调度、暂停恢复、整局计分、双模式连接和断线回退。当前实机结果与未解决的方向键问题见 [硬件验证记录](docs/hardware-testing.md)。
 
 ## 发布范围与素材
 
