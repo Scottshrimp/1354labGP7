@@ -631,6 +631,7 @@ def play(left, right):
     last_frame = ticks_add(ticks_ms(), -FRAME_MS)
     last_joy = joy_direction(center_x, center_y)
     hud_dirty = False
+    last_led = -1
     left.clear()
     left.line(1, 18, 126, 18)
     left.line(1, 52, 126, 52)
@@ -677,7 +678,6 @@ def play(left, right):
                     0,
                     "LS R / LS DOWN",
                 )
-                display.show(Image.SQUARE)
             elif paused and d == 1:
                 paused = False
                 t0 = ticks_add(t0, ticks_diff(now, paused_at))
@@ -686,7 +686,6 @@ def play(left, right):
                     send_event("RESUME", round_id)
                 right.hud_combo = None
                 draw_hud(right, combo, score)
-                display.show(str(combo % 10))
                 last_frame = ticks_add(now, -FRAME_MS)
             elif paused and d == 2:
                 return_to_menu(pc)
@@ -717,7 +716,6 @@ def play(left, right):
                 display.show(str(digit))
                 countdown = digit
         elif countdown:
-            display.show("0")
             countdown = 0
         if ticks_diff(now, feedback_until) >= 0:
             led_off()
@@ -793,9 +791,24 @@ def play(left, right):
             while queue and queue[0][0] < elapsed - 1600:
                 queue.pop(0)
         if hud_dirty:
-            display.show(str(combo % 10))
             draw_hud(right, combo, score)
             hud_dirty = False
+        # AP/FC is cumulative for the round and never recovers after a Miss.
+        if elapsed >= 0:
+            led = 0 if miss else 1 if good else 2
+            if led != last_led:
+                display.show(
+                    Image(
+                        "99999:99999:99999:99999:99999"
+                        if led == 2
+                        else (
+                            "99999:90009:90009:90009:99999"
+                            if led == 1
+                            else "00000:00000:00000:00000:00000"
+                        )
+                    )
+                )
+                last_led = led
         sleep(1)
     if pc:
         send_event("DONE", round_id, score, miss)

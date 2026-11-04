@@ -33,6 +33,24 @@ class Screen:
         return lambda *args: None
 
 
+class MatrixImage:
+    """Minimal native Image stand-in, with snapshots for LED assertions."""
+
+    def __init__(self, width, height=None):
+        self.pixels = (
+            [int(c) for c in width.replace(":", "")]
+            if isinstance(width, str)
+            else [0] * (width * height)
+        )
+
+    def set_pixel(self, x, y, value):
+        self.pixels[y * 5 + x] = value
+
+
+MatrixImage.SQUARE = MatrixImage("99999:90009:90009:90009:99999")
+MatrixImage.HAPPY = MatrixImage("00000:09090:00000:90009:09990")
+
+
 class Harness:
     def __init__(self, notes=None, duration=60000):
         self.clock = 0
@@ -102,7 +120,7 @@ class Harness:
             "uart": UART(),
             "sleep": self.sleep,
             "display": Screen(),
-            "Image": SimpleNamespace(SQUARE=0, HAPPY=1),
+            "Image": MatrixImage,
         }
         for number in (0, 1, 5, 8, 9, 11, 12, 13, 14, 15, 16):
             env["pin" + str(number)] = Pin()

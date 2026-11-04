@@ -26,349 +26,349 @@ def _rh_boot():
 
 _rh_boot()
 #~BEGIN
-#aU='standalone'
+#aV='standalone'
 #Q='pc'
-#cg=('menu','loading','ready','playing','paused','results')
-#cE=500
-#bt=2500
-#def cM(O,dc):
-# return O-dc
-#def cN(u):
-# return isinstance(u,str)and len(u)==16 and all((aW in '0123456789abcdef' for aW in u))
-#class cL:
-# def __init__(b,aR=bt,ticks_diff=None):
-#  if aR<=0:
+#ci=('menu','loading','ready','playing','paused','results')
+#cG=500
+#bv=2500
+#def cO(O,de):
+# return O-de
+#def cP(u):
+# return isinstance(u,str)and len(u)==16 and all((aX in '0123456789abcdef' for aX in u))
+#class cN:
+# def __init__(b,aS=bv,ticks_diff=None):
+#  if aS<=0:
 #   raise ValueError('Lease timeout must be positive')
-#  b.dA=aR
-#  b.dj=ticks_diff or cM
+#  b.dC=aS
+#  b.dl=ticks_diff or cO
 #  b.clear()
 # def clear(b):
-#  b.dg=None
-#  b.dw=None
-# def dB(b,O):
-#  if b.dg is None:
+#  b.di=None
+#  b.dA=None
+# def dD(b,O):
+#  if b.di is None:
 #   return False
-#  H=b.dj(O,b.dw)
-#  return 0<=H<b.dA
-# def dS(b,u,O):
-#  if not cN(u):
+#  F=b.dl(O,b.dA)
+#  return 0<=F<b.dC
+# def dU(b,u,O):
+#  if not cP(u):
 #   raise ValueError('Session must contain 16 lowercase hexadecimal characters')
-#  if b.dg is not None:
-#   return u==b.dg and b.dB(O)
-#  b.dg=u
-#  b.dw=O
+#  if b.di is not None:
+#   return u==b.di and b.dD(O)
+#  b.di=u
+#  b.dA=O
 #  return True
-# def dO(b,u,O):
-#  if u!=b.dg or not b.dB(O):
+# def dQ(b,u,O):
+#  if u!=b.di or not b.dD(O):
 #   return False
-#  b.dw=O
+#  b.dA=O
 #  return True
-#class cI:
-# def __init__(b,aR=bt,ticks_diff=None):
-#  b.di=cL(aR,ticks_diff)
-#  b.dk=aU
-#  b.dp='menu'
-#  b.ds=False
-# def dT(b,u,O):
-#  return b.di.dS(u,O)
-# def dO(b,u,O):
-#  return b.di.dO(u,O)
-# def dW(b,u,O):
-#  if u!=b.di.dg or not b.di.dB(O):
+#class cK:
+# def __init__(b,aS=bv,ticks_diff=None):
+#  b.dk=cN(aS,ticks_diff)
+#  b.dm=aV
+#  b.dr='menu'
+#  b.dv=False
+# def dV(b,u,O):
+#  return b.dk.dU(u,O)
+# def dQ(b,u,O):
+#  return b.dk.dQ(u,O)
+# def dY(b,u,O):
+#  if u!=b.dk.di or not b.dk.dD(O):
 #   return()
-#  b.ds=True
-#  return b.dI(O)
-# def dQ(b):
-#  b.di.clear()
-#  b.ds=False
-#  if b.dk!=Q:
+#  b.dv=True
+#  return b.dK(O)
+# def dS(b):
+#  b.dk.clear()
+#  b.dv=False
+#  if b.dm!=Q:
 #   return()
 #  V=()
-#  if b.dp in('loading','ready','playing','paused'):
+#  if b.dr in('loading','ready','playing','paused'):
 #   V=('abort_pc_round',)
-#  b.dk=aU
-#  b.dp='menu'
+#  b.dm=aV
+#  b.dr='menu'
 #  return V+('enter_standalone',)
-# def dI(b,O):
-#  if b.di.dg is not None and(not b.di.dB(O)):
-#   return b.dQ()
-#  if b.ds and b.dk==aU and(b.dp=='menu'):
-#   b.dk=Q
+# def dK(b,O):
+#  if b.dk.di is not None and(not b.dk.dD(O)):
+#   return b.dS()
+#  if b.dv and b.dm==aV and(b.dr=='menu'):
+#   b.dm=Q
 #   return('enter_pc',)
 #  return()
-# def dr(b,af,O):
-#  if af not in cg:
+# def du(b,af,O):
+#  if af not in ci:
 #   raise ValueError('Unknown game phase')
-#  b.dp=af
-#  return b.dI(O)
+#  b.dr=af
+#  return b.dK(O)
 #'Bounded ASCII line framing for the RH1 serial protocol.\n\nCommand validation, handshakes, acknowledgments and serial I/O are handled by\nthe board adapter and pc_host.py.\n'
-#cK='RH1'
-#bu=60
-#class cG:
-# def __init__(b,bh=bu):
-#  if not 1<=bh<=bu:
+#cM='RH1'
+#bw=60
+#class cI:
+# def __init__(b,bj=bw):
+#  if not 1<=bj<=bw:
 #   raise ValueError('Line limit must be between 1 and 60 bytes')
-#  b.dE=bh
-#  b.dJ()
-# def dJ(b):
-#  b.dq=bytearray()
-#  b.dv=False
-#  b.dC=False
-# def dV(b,ar):
-#  bS=[]
+#  b.dG=bj
+#  b.dL()
+# def dL(b):
+#  b.ds=bytearray()
+#  b.dz=False
+#  b.dE=False
+# def dX(b,ar):
+#  bU=[]
 #  for E in ar or b'':
 #   if E==10:
-#    if not b.dv and b.dq:
-#     bS.append(b.dq.decode('ascii'))
-#    b.dJ()
-#   elif b.dv:
+#    if not b.dz and b.ds:
+#     bU.append(b.ds.decode('ascii'))
+#    b.dL()
+#   elif b.dz:
 #    continue
 #   elif E==13:
-#    if b.dC:
-#     b.dq=bytearray()
-#     b.dv=True
-#    b.dC=True
-#   elif b.dC or E<32 or E>126 or(len(b.dq)>=b.dE):
-#    b.dq=bytearray()
-#    b.dv=True
+#    if b.dE:
+#     b.ds=bytearray()
+#     b.dz=True
+#    b.dE=True
+#   elif b.dE or E<32 or E>126 or(len(b.ds)>=b.dG):
+#    b.ds=bytearray()
+#    b.dz=True
 #   else:
-#    b.dq.append(E)
-#  return bS
+#    b.ds.append(E)
+#  return bU
 #from microbit import*
 #import music
 #import gc
 #from utime import ticks_ms,ticks_diff,ticks_add
 #~
 #from random import getrandbits
-#def cO(text):
-# ci='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+#def cQ(text):
+# ck='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 # ar=bytearray()
 # E=am=0
-# for aW in text:
-#  E=E<<6|ci.index(aW)
+# for aX in text:
+#  E=E<<6|ck.index(aX)
 #  am+=6
 #  if am>=8:
 #   am-=8
 #   ar.append(E>>am&255)
 #   E&=(1<<am)-1
 # return ar
-#def cB(text):
-# aA=cO(text)
-# az=bytearray()
-# I=0
-# while I<len(aA):
-#  E=aA[I]
-#  I+=1
+#def cD(text):
+# aB=cQ(text)
+# aA=bytearray()
+# H=0
+# while H<len(aB):
+#  E=aB[H]
+#  H+=1
 #  if E:
-#   az.append(E)
+#   aA.append(E)
 #  else:
-#   bR=aA[I]
-#   I+=1
-#   if bR==0:
-#    az.append(0)
+#   bT=aB[H]
+#   H+=1
+#   if bT==0:
+#    aA.append(0)
 #   else:
-#    cl=aA[I]|aA[I+1]<<8
-#    I+=2
-#    for bx in range(bR):
-#     az.append(az[-cl])
-# return az
-#cF=3000
-#cJ=220
-#cD=400
-#aT=20
-#bw=True
-#bv=159196
-#ce='AAAAAHUAAD6CAAB2AAA+gwAA6wAASgUBYAFFhwHrAABEBQHrAABDAAQFAEEFAQAHIwBBgwAAdQAAQ4IAAHUAADwABA8APAAgMgB1AABBAAQoAEMABDcAOwAECgA7ACwyADoABAoAOgAsMgAAHMgA6gAAQQQBAAUeAAAMMgAAHMgAABYyAAAcyAAAFjIAAAjIAOoAAEoEAWEBRYgAITIASgAECgBKAAQyAFYABDIAUQAEMgBQAAQtAE8EAesAAE0FAQAFHgB1AABNAAQoAE8ABAoASAAECgBIACwyAEcABDsBR4IAAOsAAFYFACYyAEYABDIARgAMMgDqAABQAAQtAE8ABM0AABQyAEoABDIASgAlMgB1AABPAAfDAAAFzQAAKjIARwAHzQAABTIAYAFRAASQAVAABC0AABkyAEYAB80AABkyAAAHgQFNAAQoAAAFMgAABUYATQAE9AFNAAQiAU0AByIBAAUDAksCSowCAAdpAE0ABIEBAAUeAAAFSwBQAAQUAAAFCQEABRMBAAiHAGABT4cABC0AABYyAOsAAFEABIIAVAAJmwBWAAQUAFYABBQAVgAERgBRAARGAFaCAAAhBFSWBHYABC0AAAUUAOoAAFEABEYAUQAHQQAABVAASwJPjAIABSMAdQAAUQAE8AAADR4AAAcKAAAFWgAABR4AAAUUAAAFbgAACiMAAAXwAFQADIEB6wAATAAEBQBGAAQ3AAAFdgJKAAcZACEEVKoIAAdoAQAPQAFQAApKAQAHFwI6AABQQQAAOgAAT0EAADsAAE1CAAA6AABKQQAEHQEFAasDT5YEAAUJAQAFlgAABQkBAAUKAAAURgB1AABMAAS5AAAFlgAACtIAVAAEBQBVAAdPAXUAAFAACY8CTQAENgEABV8AQQAJfwNFAAfMAdYBTAoC1gFKAAQFAEwKAtUBTQkC1gFPAAcPAKsDURMABG0BAARGAAAKUABOAASCAAAF2wFMAAQPAEsAB+UBNgNJkQMhBEupCAAKqgAACg4BAA+RAAAFMgAACg4BOgAATQAEEwFKQgAEHgAEAawACQ4BAAd9AAAIDgEAFEYAABkOAeoAAFUABOYAAAVGAAANRQEABQ4BAAWDBAAHVQVFAAfMAQAKDgHVAUwABAkBTQAEDwBPAAcPAKwDURQEABGVAU4ACYwAAAgOAQAF+gAACA4BlgSBBToeBtUBQQAEQQBAFASrAz4TBFYHQU4QgAU6HQbWAUEKAA0ZAD5OEAAHGQU+AATXAABOmgYADDIAACaaBgAyMgAAKJoGABYyAAAuYgeIAbAAAE2wAARNA1UABAgCAAQtAEgABCMATAAE/gFKAARjBkUACScGSgAtLQAABIIARgAJ8gMABTcFAAgPAAAFBQDqAABGAAQyAEYACSgASAAEFABIAAQUAEgABBQASAAHFAAAFhkASgAJcwAABWkAAAVMBEkABBQASQAElAJJAASyAkkABBkASQAYQQBHAAQUAEcABC0ARwAELQBHAAQZAAAFFABGAAQUAEYABBQAAAqbAAAIrwAADxkAAAVVAAAFUAAACloAAAoUAAARGQBKAAQZAEoAB1kGAArDAAAHvgAACBkAABQUAAAgLQAACKUAAAWbAAAKqgAAFhkAAA2bAAAPrwAAB9EBAAVJBwAIaAEAEW4AAAVUAQAFBQBJAAQtAEkABC0AAAhoAQARQQBHAAdtAQAFBQAAB3EHAAUPAAAcHAIAERkAABRaAAAXtAAAMvwDADIyAAAFlwkABaEJACoyADwAB50DACouBAAyXgsALjIA'
+#    cn=aB[H]|aB[H+1]<<8
+#    H+=2
+#    for bz in range(bT):
+#     aA.append(aA[-cn])
+# return aA
+#cH=3000
+#cL=220
+#cF=400
+#aU=20
+#by=True
+#bx=159196
+#cg='AAAAAHUAAD6CAAB2AAA+gwAA6wAASgUBYAFFhwHrAABEBQHrAABDAAQFAEEFAQAHIwBBgwAAdQAAQ4IAAHUAADwABA8APAAgMgB1AABBAAQoAEMABDcAOwAECgA7ACwyADoABAoAOgAsMgAAHMgA6gAAQQQBAAUeAAAMMgAAHMgAABYyAAAcyAAAFjIAAAjIAOoAAEoEAWEBRYgAITIASgAECgBKAAQyAFYABDIAUQAEMgBQAAQtAE8EAesAAE0FAQAFHgB1AABNAAQoAE8ABAoASAAECgBIACwyAEcABDsBR4IAAOsAAFYFACYyAEYABDIARgAMMgDqAABQAAQtAE8ABM0AABQyAEoABDIASgAlMgB1AABPAAfDAAAFzQAAKjIARwAHzQAABTIAYAFRAASQAVAABC0AABkyAEYAB80AABkyAAAHgQFNAAQoAAAFMgAABUYATQAE9AFNAAQiAU0AByIBAAUDAksCSowCAAdpAE0ABIEBAAUeAAAFSwBQAAQUAAAFCQEABRMBAAiHAGABT4cABC0AABYyAOsAAFEABIIAVAAJmwBWAAQUAFYABBQAVgAERgBRAARGAFaCAAAhBFSWBHYABC0AAAUUAOoAAFEABEYAUQAHQQAABVAASwJPjAIABSMAdQAAUQAE8AAADR4AAAcKAAAFWgAABR4AAAUUAAAFbgAACiMAAAXwAFQADIEB6wAATAAEBQBGAAQ3AAAFdgJKAAcZACEEVKoIAAdoAQAPQAFQAApKAQAHFwI6AABQQQAAOgAAT0EAADsAAE1CAAA6AABKQQAEHQEFAasDT5YEAAUJAQAFlgAABQkBAAUKAAAURgB1AABMAAS5AAAFlgAACtIAVAAEBQBVAAdPAXUAAFAACY8CTQAENgEABV8AQQAJfwNFAAfMAdYBTAoC1gFKAAQFAEwKAtUBTQkC1gFPAAcPAKsDURMABG0BAARGAAAKUABOAASCAAAF2wFMAAQPAEsAB+UBNgNJkQMhBEupCAAKqgAACg4BAA+RAAAFMgAACg4BOgAATQAEEwFKQgAEHgAEAawACQ4BAAd9AAAIDgEAFEYAABkOAeoAAFUABOYAAAVGAAANRQEABQ4BAAWDBAAHVQVFAAfMAQAKDgHVAUwABAkBTQAEDwBPAAcPAKwDURQEABGVAU4ACYwAAAgOAQAF+gAACA4BlgSBBToeBtUBQQAEQQBAFASrAz4TBFYHQU4QgAU6HQbWAUEKAA0ZAD5OEAAHGQU+AATXAABOmgYADDIAACaaBgAyMgAAKJoGABYyAAAuYgeIAbAAAE2wAARNA1UABAgCAAQtAEgABCMATAAE/gFKAARjBkUACScGSgAtLQAABIIARgAJ8gMABTcFAAgPAAAFBQDqAABGAAQyAEYACSgASAAEFABIAAQUAEgABBQASAAHFAAAFhkASgAJcwAABWkAAAVMBEkABBQASQAElAJJAASyAkkABBkASQAYQQBHAAQUAEcABC0ARwAELQBHAAQZAAAFFABGAAQUAEYABBQAAAqbAAAIrwAADxkAAAVVAAAFUAAACloAAAoUAAARGQBKAAQZAEoAB1kGAArDAAAHvgAACBkAABQUAAAgLQAACKUAAAWbAAAKqgAAFhkAAA2bAAAPrwAAB9EBAAVJBwAIaAEAEW4AAAVUAQAFBQBJAAQtAEkABC0AAAhoAQARQQBHAAdtAQAFBQAAB3EHAAUPAAAcHAIAERkAABRaAAAXtAAAMvwDADIyAAAFlwkABaEJACoyADwAB50DACouBAAyXgsALjIA'
 #~
-#aS=cB('JwgAABMEAAAUBAETBAEUBAITBAIUBAMTBAMUBAAKGABiFAAWGAAABRUAAgAFFQADYRQAAAAFGwABAAUbAAAKGAAABS0AAAcYAGEAF0gAAAx4AGIUAByQAAAJSAAAFWAAABWQAAAz2AAADDAAACfYAAAMGAATBAAA')
-#cd={58:233,59:247,60:262,62:294,64:330,65:349,67:392,68:415,69:440,70:466,71:494,72:523,73:554,74:587,75:622,76:659,77:698,78:740,79:784,80:831,81:880,84:1047,85:1109,86:1175}
-#M=None
-#def cV():
-# global M
-# if M is None:
+#aT=cD('JwgAABMEAAAUBAETBAEUBAITBAIUBAMTBAMUBAAKGABiFAAWGAAABRUAAgAFFQADYRQAAAAFGwABAAUbAAAKGAAABS0AAAcYAGEAF0gAAAx4AGIUAByQAAAJSAAAFWAAABWQAAAz2AAADDAAACfYAAAMGAATBAAA')
+#cf={58:233,59:247,60:262,62:294,64:330,65:349,67:392,68:415,69:440,70:466,71:494,72:523,73:554,74:587,75:622,76:659,77:698,78:740,79:784,80:831,81:880,84:1047,85:1109,86:1175}
+#L=None
+#def cX():
+# global L
+# if L is None:
 #  gc.collect()
-#  M=cB(ce)
+#  L=cD(cg)
 #  gc.collect()
-#br=(pin13,pin11,pin15,pin5)
-#bs='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-: >/'
-#cc='7555726227717477171755711747177475771111757577571725755656563444365556746477464434553557557222711152556554444757755577752555265644255736565534216722225555755552557755525555222712470070002020000004212411244'
+#bt=(pin13,pin11,pin15,pin5)
+#bu='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-: >/'
+#ce='7555726227717477171755711747177475771111757577571725755656563444365556746477464434553557557222711152556554444757755577752555265644255736565534216722225555755552557755525555222712470070002020000004212411244'
 #~
-#class cf:
-# def __init__(b,aE):
-#  b.du=aE
-#  b.dm=bytearray(1024)
-#  b.dn=bytearray(1024)
-#  b.dD=True
+#class ch:
+# def __init__(b,aF):
+#  b.dw=aF
+#  b.do=bytearray(1024)
+#  b.dp=bytearray(1024)
+#  b.dF=True
 #  for an in(174,213,128,168,63,211,0,64,141,20,32,2,161,200,218,18,129,207,217,241,219,64,164,166,175):
-#   i2c.write(aE,bytes((0,an)))
+#   i2c.write(aF,bytes((0,an)))
 # def clear(b):
-#  for I in range(1024):
-#   b.dm[I]=0
-# def do(b,f,v):
+#  for H in range(1024):
+#   b.do[H]=0
+# def dq(b,f,v):
 #  if 0<=f<128 and 0<=v<64:
-#   b.dm[f+(v>>3)*128]|=1<<(v&7)
-# def dh(b,S,al,P,ca):
-#  ba=abs(P-S)
-#  bo=1 if S<P else-1
-#  bb=-abs(ca-al)
-#  bp=1 if al<ca else-1
-#  X=ba+bb
+#   b.do[f+(v>>3)*128]|=1<<(v&7)
+# def dj(b,S,al,P,cc):
+#  bb=abs(P-S)
+#  bq=1 if S<P else-1
+#  bc=-abs(cc-al)
+#  br=1 if al<cc else-1
+#  X=bb+bc
 #  while True:
-#   b.do(S,al)
-#   if S==P and al==ca:
+#   b.dq(S,al)
+#   if S==P and al==cc:
 #    break
-#   bF=2*X
-#   if bF>=bb:
+#   bH=2*X
+#   if bH>=bc:
+#    X+=bc
+#    S+=bq
+#   if bH<=bb:
 #    X+=bb
-#    S+=bo
-#   if bF<=ba:
-#    X+=ba
-#    al+=bp
-# def dL(b,p,q,bW):
-#  f=bW
+#    al+=br
+# def dN(b,p,q,bY):
+#  f=bY
 #  v=0
-#  bc=1-bW
+#  bd=1-bY
 #  while f>=v:
-#   b.do(p+f,q+v)
-#   b.do(p+v,q+f)
-#   b.do(p-v,q+f)
-#   b.do(p-f,q+v)
-#   b.do(p-f,q-v)
-#   b.do(p-v,q-f)
-#   b.do(p+v,q-f)
-#   b.do(p+f,q-v)
+#   b.dq(p+f,q+v)
+#   b.dq(p+v,q+f)
+#   b.dq(p-v,q+f)
+#   b.dq(p-f,q+v)
+#   b.dq(p-f,q-v)
+#   b.dq(p-v,q-f)
+#   b.dq(p+v,q-f)
+#   b.dq(p+f,q-v)
 #   v+=1
-#   if bc<0:
-#    bc+=2*v+1
+#   if bd<0:
+#    bd+=2*v+1
 #   else:
 #    f-=1
-#    bc+=2*(v-f)+1
-# def dR(b,p,q,D,bW=8):
-#  t=bW
+#    bd+=2*(v-f)+1
+# def dT(b,p,q,D,bY=8):
+#  t=bY
 #  if D==0:
-#   b.dh(p,q-t,p-t,q+3)
-#   b.dh(p,q-t,p+t,q+3)
-#   b.dh(p,q-t,p,q+t)
+#   b.dj(p,q-t,p-t,q+3)
+#   b.dj(p,q-t,p+t,q+3)
+#   b.dj(p,q-t,p,q+t)
 #  elif D==1:
-#   b.dh(p+t,q,p-3,q-t)
-#   b.dh(p+t,q,p-3,q+t)
-#   b.dh(p-t,q,p+t,q)
+#   b.dj(p+t,q,p-3,q-t)
+#   b.dj(p+t,q,p-3,q+t)
+#   b.dj(p-t,q,p+t,q)
 #  elif D==2:
-#   b.dh(p,q+t,p-t,q-3)
-#   b.dh(p,q+t,p+t,q-3)
-#   b.dh(p,q-t,p,q+t)
+#   b.dj(p,q+t,p-t,q-3)
+#   b.dj(p,q+t,p+t,q-3)
+#   b.dj(p,q-t,p,q+t)
 #  else:
-#   b.dh(p-t,q,p+3,q-t)
-#   b.dh(p-t,q,p+3,q+t)
-#   b.dh(p-t,q,p+t,q)
-# def dl(b,cW,f,v,aN=1):
-#  for an in str(cW).upper():
-#   w=bs.find(an)
+#   b.dj(p-t,q,p+3,q-t)
+#   b.dj(p-t,q,p+3,q+t)
+#   b.dj(p-t,q,p+t,q)
+# def dn(b,cY,f,v,aO=1):
+#  for an in str(cY).upper():
+#   w=bu.find(an)
 #   if w<0:
-#    w=bs.find(' ')
-#   for cb in range(5):
-#    cw=ord(cc[w*5+cb])-48
-#    for bZ in range(3):
-#     if cw&1<<2-bZ:
-#      for bp in range(aN):
-#       for bo in range(aN):
-#        b.do(f+bZ*aN+bo,v+cb*aN+bp)
-#   f+=4*aN
+#    w=bu.find(' ')
+#   for cd in range(5):
+#    cA=ord(ce[w*5+cd])-48
+#    for cb in range(3):
+#     if cA&1<<2-cb:
+#      for br in range(aO):
+#       for bq in range(aO):
+#        b.dq(f+cb*aO+bq,v+cd*aO+br)
+#   f+=4*aO
 # def show(b):
-#  b.dG(0,127,0,7)
-#  b.dD=False
-# def dX(b,S,P):
+#  b.dI(0,127,0,7)
+#  b.dF=False
+# def dZ(b,S,P):
 #  if S<=P:
-#   b.dG(S,P,3,5)
-# def dG(b,S,P,da,db):
+#   b.dI(S,P,3,5)
+# def dI(b,S,P,dc,dd):
 #  S=max(0,S)
 #  P=min(127,P)
-#  for ai in range(da,db+1):
-#   J=ai*128
+#  for ai in range(dc,dd+1):
+#   I=ai*128
 #   f=S
 #   while f<=P:
-#    while f<=P and(not b.dD)and(b.dm[J+f]==b.dn[J+f]):
+#    while f<=P and(not b.dF)and(b.do[I+f]==b.dp[I+f]):
 #     f+=1
 #    if f>P:
 #     break
-#    aB=f
-#    be=f
+#    aC=f
+#    bg=f
 #    f+=1
-#    while f<=P and f-aB<28:
-#     if b.dD or b.dm[J+f]!=b.dn[J+f]:
-#      be=f
-#     elif f-be>6:
+#    while f<=P and f-aC<28:
+#     if b.dF or b.do[I+f]!=b.dp[I+f]:
+#      bg=f
+#     elif f-bg>6:
 #      break
 #     f+=1
-#    aG=be+1
-#    i2c.write(b.du,bytes((0,176|ai,aB&15,16|aB>>4)))
-#    i2c.write(b.du,b'@'+b.dm[J+aB:J+aG])
-#    for ah in range(aB,aG):
-#     b.dn[J+ah]=b.dm[J+ah]
-#    if f<aG:
-#     f=aG
-# def dM(b,S,P,cY,cZ):
-#  for ai in range(cY,cZ+1):
-#   J=ai*128
+#    aH=bg+1
+#    i2c.write(b.dw,bytes((0,176|ai,aC&15,16|aC>>4)))
+#    i2c.write(b.dw,b'@'+b.do[I+aC:I+aH])
+#    for ah in range(aC,aH):
+#     b.dp[I+ah]=b.do[I+ah]
+#    if f<aH:
+#     f=aH
+# def dO(b,S,P,da,db):
+#  for ai in range(da,db+1):
+#   I=ai*128
 #   for f in range(S,P+1):
-#    b.dm[J+f]=0
-# def dU(b):
+#    b.do[I+f]=0
+# def dW(b):
 #  for ai in(3,4,5):
-#   J=ai*128
+#   I=ai*128
 #   for f in range(128):
-#    b.dm[J+f]=0
+#    b.do[I+f]=0
 #~
-#def bg():
-# if bw:
+#def bi():
+# if by:
 #  pin9.write_digital(1)
 #  pin14.write_digital(1)
 #  pin16.write_digital(1)
-#def cU(cv):
-# if not bw:
+#def cW(cz):
+# if not by:
 #  return
-# pin9.write_digital(0 if cv in(1,2)else 1)
-# pin14.write_digital(0 if cv in(0,1)else 1)
+# pin9.write_digital(0 if cz in(1,2)else 1)
+# pin14.write_digital(0 if cz in(0,1)else 1)
 # pin16.write_digital(1)
 #z=[]
 #C='MENU'
-#def bq(ar,cr):
-# return ar[cr]|ar[cr+1]<<8
-#class cH:
+#def bs(ar,cu):
+# return ar[cu]|ar[cu+1]<<8
+#class cJ:
 # def __init__(b):
-#  cV()
+#  cX()
 #  b.index=0
-#  b.dF=bq(M,0)if M else bv
-#  b.dH=-1
+#  b.dH=bs(L,0)if L else bx
+#  b.dJ=-1
 #  b.pitch=0
-#  b.dz=False
+#  b.dB=False
 # def stop(b):
 #  music.stop(pin12)
-#  b.dz=False
-# def update(b,H):
-#  if H<0:
+#  b.dB=False
+# def update(b,F):
+#  if F<0:
 #   return
-#  bz=False
-#  while b.index<len(M)and H>=b.dF:
-#   b.dH=b.dF+bq(M,b.index+2)
-#   b.pitch=M[b.index+4]
+#  bB=False
+#  while b.index<len(L)and F>=b.dH:
+#   b.dJ=b.dH+bs(L,b.index+2)
+#   b.pitch=L[b.index+4]
 #   b.index+=5
-#   if b.index<len(M):
-#    b.dF+=bq(M,b.index)
-#   bz=True
-#  if H<b.dH:
-#   if bz or not b.dz:
-#    music.pitch(cd[b.pitch],duration=-1,pin=pin12,wait=False)
-#    b.dz=True
-#  elif b.dz:
+#   if b.index<len(L):
+#    b.dH+=bs(L,b.index)
+#   bB=True
+#  if F<b.dJ:
+#   if bB or not b.dB:
+#    music.pitch(cf[b.pitch],duration=-1,pin=pin12,wait=False)
+#    b.dB=True
+#  elif b.dB:
 #   b.stop()
-#class cC:
+#class cE:
 # def __init__(b):
 #  b.index=0
-#  b.dK=0
-# def dN(b):
-#  while len(z)<12 and b.index<len(aS):
-#   b.dK+=bq(aS,b.index)
-#   z.append([b.dK,aS[b.index+2],0,None])
+#  b.dM=0
+# def dP(b):
+#  while len(z)<12 and b.index<len(aT):
+#   b.dM+=bs(aT,b.index)
+#   z.append([b.dM,aT[b.index+2],0,None])
 #   b.index+=3
 #def ag(p,q):
 # f=pin0.read_analog()-p
@@ -378,433 +378,435 @@ _rh_boot()
 # if abs(f)>=abs(v):
 #  return 1 if f>0 else 3
 # return 0 if v>0 else 2
-#def cT(cX,al,cR):
-# for v in range(al,al+cR):
-#  ch=(v>>3)*128
-#  cp=1<<(v&7)
+#def cV(cZ,al,cT):
+# for v in range(al,al+cT):
+#  cj=(v>>3)*128
+#  cr=1<<(v&7)
 #  for f in range(6,122):
-#   cX.dm[ch+f]^=cp
-#def ax(m,cS,aM,w,cQ):
+#   cZ.do[cj+f]^=cr
+#def ax(m,cU,aN,w,cS):
 # m.hud_combo=None
 # m.clear()
-# m.dl(cS[:18],4,2)
-# for I in range(min(4,len(aM))):
-#  cA=max(0,min(w-2,len(aM)-4))if len(aM)>4 else 0
-#  ah=cA+I
-#  if ah>=len(aM):
+# m.dn(cU[:18],4,2)
+# for H in range(min(4,len(aN))):
+#  cC=max(0,min(w-2,len(aN)-4))if len(aN)>4 else 0
+#  ah=cC+H
+#  if ah>=len(aN):
 #   break
-#  v=16+I*9
-#  m.dl(aM[ah][:25],10,v)
+#  v=16+H*9
+#  m.dn(aN[ah][:25],10,v)
 #  if ah==w:
-#   cT(m,v-1,8)
-# m.dl(cQ[:28],3,57)
+#   cV(m,v-1,8)
+# m.dn(cS[:28],3,57)
 # m.show()
-#def bD(m,G,R):
+#def bF(m,M,R):
 # if getattr(m,'hud_combo',None)is None:
 #  m.clear()
-#  m.dl('COMBO',23,3,2)
-#  m.dh(8,39,119,39)
-#  m.dl('SCORE',8,48)
-#  m.dl(str(G),max(0,(128-(4*len(str(G))-1)*2)//2),22,2)
-#  m.dl(str(R),40,48)
+#  m.dn('COMBO',23,3,2)
+#  m.dj(8,39,119,39)
+#  m.dn('SCORE',8,48)
+#  m.dn(str(M),max(0,(128-(4*len(str(M))-1)*2)//2),22,2)
+#  m.dn(str(R),40,48)
 #  m.show()
 # else:
-#  if G!=m.hud_combo:
-#   m.dM(0,127,2,3)
-#   bB=str(G)
-#   m.dl(bB,max(0,(128-(4*len(bB)-1)*2)//2),22,2)
-#   m.dG(0,127,2,3)
-#  if R!=m.dP:
-#   m.dM(40,127,6,6)
-#   m.dl(str(R),40,48)
-#   m.dG(40,127,6,6)
-# m.hud_combo=G
-# m.dP=R
-#def co(ad,g):
-# cU(ad)
+#  if M!=m.hud_combo:
+#   m.dO(0,127,2,3)
+#   bD=str(M)
+#   m.dn(bD,max(0,(128-(4*len(bD)-1)*2)//2),22,2)
+#   m.dI(0,127,2,3)
+#  if R!=m.dR:
+#   m.dO(40,127,6,6)
+#   m.dn(str(R),40,48)
+#   m.dI(40,127,6,6)
+# m.hud_combo=M
+# m.dR=R
+#def cq(ad,g):
+# cW(ad)
 # pin8.write_digital(1 if ad==2 else 0)
 # return(ticks_add(g,130),0)
-#def cq():
+#def ct():
 # return '%04x%04x'%(getrandbits(16),getrandbits(16))
-#o=cI(ticks_diff=ticks_diff)
-#bH=cG()
-#aK=cq()
-#bM=ticks_add(ticks_ms(),-1000)
+#o=cK(ticks_diff=ticks_diff)
+#bJ=cI()
+#aL=ct()
+#bN=ticks_add(ticks_ms(),-1000)
 #au=0
 #T=[]
 #ao=0
 #Z=0
-#L=0
-#bm=0
-#aL=0
+#K=0
+#bo=0
+#aM=0
 #ae=0
 #ap=False
-#aP=False
-#bY=0
+#aQ=False
+#ca=0
 #at=0
-#bP=0
+#bR=0
 #Y=''
 #N=[]
-#aH=0
-#bG=0
-#bk=-1
-#bL=ticks_ms()
+#aI=0
+#bI=0
+#bm=-1
+#bM=ticks_ms()
 #~
-#def aD(*cP):
-# line=','.join((str(E)for E in cP))
+#def aE(*cR):
+# line=','.join((str(E)for E in cR))
 # if len(line)<=60:
 #  uart.write(line+'\n')
-#def aa(bA,*df):
-# global aH
-# if o.di.dg:
-#  if bA=='NEED' and any((X[1]=='NEED' for X in N)):
+#def aa(bC,*dh):
+# global aI
+# if o.dk.di:
+#  if bC=='NEED' and any((X[1]=='NEED' for X in N)):
 #   return
-#  N.append((aH,bA)+df)
-#  aH=(aH+1)%65536
-#def bT():
-# global M
+#  N.append((aI,bC)+dh)
+#  aI=(aI+1)%65536
+#def bV():
+# global L
 # music.stop(pin12)
-# M=None
-# bg()
+# L=None
+# bi()
 # pin8.write_digital(0)
 #def ak(stop):
 # global C,z,Y
-# if stop and o.dk==Q:
-#  aa('STOP',L)
-# bT()
+# if stop and o.dm==Q:
+#  aa('STOP',K)
+# bV()
 # z=[]
-# o.dr('menu',ticks_ms())
+# o.du('menu',ticks_ms())
 # C='MENU'
 # Y=''
-#def cj(V):
-# global aK,T,z,C,Y,Z
+#def cl(V):
+# global aL,T,z,C,Y,Z
 # if 'enter_standalone' in V or 'enter_pc' in V:
-#  bT()
+#  bV()
 #  z=[]
 #  C='MENU'
 #  Y=''
 #  Z=0
 # if 'enter_standalone' in V:
 #  T=[]
-# if o.di.dg is None:
-#  bH.dJ()
+# if o.dk.di is None:
+#  bJ.dL()
 #  N[:]=[]
-#  aK=cq()
-#def bA(l,g):
-# global T,ao,bm,aL,ae
-# global ap,C,aP,bY,at,Y
-# K=l[0]
-# if K=='EA' and len(l)==2:
+#  aL=ct()
+#def bC(l,g):
+# global T,ao,bo,aM,ae
+# global ap,C,aQ,ca,at,Y
+# J=l[0]
+# if J=='EA' and len(l)==2:
 #  if N and int(l[1])==N[0][0]:
 #   N.pop(0)
 #  return
-# if K=='HB' and len(l)==1:
+# if J=='HB' and len(l)==1:
 #  return
-# if K=='CATBEGIN' and len(l)==2 and(not o.ds):
+# if J=='CATBEGIN' and len(l)==2 and(not o.dv):
 #  aq=int(l[1])
 #  if not 1<=aq<=12:
 #   raise ValueError()
 #  T=[]
 #  ao=aq
 #  return
-# if K=='CAT' and len(l)==3 and(not o.ds):
+# if J=='CAT' and len(l)==3 and(not o.dv):
 #  w=int(l[1])
 #  if w!=len(T)or w>=ao:
 #   raise ValueError()
 #  T.append((w,l[2][:18]))
 #  return
-# if K=='READY' and len(l)==1 and(len(T)==ao)and ao:
-#  cj(o.dW(o.di.dg,g))
+# if J=='READY' and len(l)==1 and(len(T)==ao)and ao:
+#  cl(o.dY(o.dk.di,g))
 #  return
-# if K=='BYE' and len(l)==1:
-#  o.di.dw=ticks_add(g,-3000)
+# if J=='BYE' and len(l)==1:
+#  o.dk.dA=ticks_add(g,-3000)
 #  return
-# if o.dk!=Q or len(l)<2:
+# if o.dm!=Q or len(l)<2:
 #  raise ValueError()
-# if int(l[1])!=L or C=='MENU' or o.dp=='results':
+# if int(l[1])!=K or C=='MENU' or o.dr=='results':
 #  return
-# if K=='BEGIN' and len(l)==4 and(C=='LOADING'):
+# if J=='BEGIN' and len(l)==4 and(C=='LOADING'):
 #  duration,aq=(int(l[2]),int(l[3]))
 #  if not 0<duration<=3600000 or not 0<aq<=10000:
 #   raise ValueError()
-#  bm,aL,ae=(duration,aq,0)
+#  bo,aM,ae=(duration,aq,0)
 #  ap=False
 #  at=g
-# elif K=='N' and len(l)==5 and(C in('LOADING','ARMED','PLAY')):
-#  w,bn,D=(int(l[2]),int(l[3]),int(l[4]))
-#  if w!=ae or w>=aL or len(z)>=48 or(not 0<=bn<bm)or(not 0<=D<4)or(z and bn<z[-1][0]):
+# elif J=='N' and len(l)==5 and(C in('LOADING','ARMED','PLAY')):
+#  w,bp,D=(int(l[2]),int(l[3]),int(l[4]))
+#  if w!=ae or w>=aM or len(z)>=48 or(not 0<=bp<bo)or(not 0<=D<4)or(z and bp<z[-1][0]):
 #   raise ValueError()
-#  z.append([bn,D,0,None])
+#  z.append([bp,D,0,None])
 #  ae+=1
 #  at=g
-# elif K=='END' and len(l)==2 and(ae==aL):
+# elif J=='END' and len(l)==2 and(ae==aM):
 #  ap=True
-# elif K=='ARM' and len(l)==2 and(C=='LOADING')and ae:
+# elif J=='ARM' and len(l)==2 and(C=='LOADING')and ae:
 #  C='ARMED'
-#  o.dr('ready',g)
-# elif K=='SYNC' and len(l)==2 and(C=='PLAY')and(not aP):
-#  bY=ticks_add(g,2700)
-#  aP=True
-#  aa('SYNCED',L)
-# elif K=='ERROR' and len(l)==2:
+#  o.du('ready',g)
+# elif J=='SYNC' and len(l)==2 and(C=='PLAY')and(not aQ):
+#  ca=ticks_add(g,2700)
+#  aQ=True
+#  aa('SYNCED',K)
+# elif J=='ERROR' and len(l)==2:
 #  ak(True)
 # else:
 #  raise ValueError()
 #~
-#def dd(line,g):
-# global au,aH,bk,T,ao,Z
+#def df(line,g):
+# global au,aI,bm,T,ao,Z
 # l=line.split(',')
-# if len(l)==4 and l[:2]==['RH1','ATTACH']and(l[2]==aK)and(len(l[3])==8)and all((an in '0123456789abcdef' for an in l[3])):
-#  u=aK+l[3]
-#  cm=o.di.dg is None
-#  if o.dT(u,g):
-#   if cm:
-#    au=aH=0
-#    bk=-1
+# if len(l)==4 and l[:2]==['RH1','ATTACH']and(l[2]==aL)and(len(l[3])==8)and all((an in '0123456789abcdef' for an in l[3])):
+#  u=aL+l[3]
+#  co=o.dk.di is None
+#  if o.dV(u,g):
+#   if co:
+#    au=aI=0
+#    bm=-1
 #    T=[]
 #    ao=0
 #    Z=0
 #    N[:]=[]
-#   aD('RH1','ACCEPT',u)
+#   aE('RH1','ACCEPT',u)
 #  return
-# if len(l)<4 or l[0]!='RH1' or l[1]!=o.di.dg:
+# if len(l)<4 or l[0]!='RH1' or l[1]!=o.dk.di:
 #  return
 # try:
-#  aO=int(l[2])
-#  if aO==(au-1)%65536:
-#   aD('RH1',l[1],'A',aO,'OK')
+#  aP=int(l[2])
+#  if aP==(au-1)%65536:
+#   aE('RH1',l[1],'A',aP,'OK')
 #   return
-#  if aO!=au:
+#  if aP!=au:
 #   return
-#  bA(l[3:],g)
-#  o.dO(l[1],g)
+#  bC(l[3:],g)
+#  o.dQ(l[1],g)
 #  au=(au+1)%65536
-#  aD('RH1',l[1],'A',aO,'OK')
+#  aE('RH1',l[1],'A',aP,'OK')
 # except(ValueError,IndexError):
-#  aD('RH1',l[1],'A',l[2],'BAD')
-#def bl():
-# global aK,bM,bG,bk,bL
+#  aE('RH1',l[1],'A',l[2],'BAD')
+#def bn():
+# global aL,bN,bI,bm,bM
 # g=ticks_ms()
-# cn=o.di.dg is not None
-# V=o.dI(g)
-# if V or(cn and o.di.dg is None):
-#  cj(V)
-# if ticks_diff(g,bL)>=1000:
+# cp=o.dk.di is not None
+# V=o.dK(g)
+# if V or(cp and o.dk.di is None):
+#  cl(V)
+# if ticks_diff(g,bM)>=1000:
 #  gc.collect()
-#  bL=g
-# if uart.any():
-#  for line in bH.dV(uart.read(64)):
-#   dd(line,g)
-# if N and(N[0][0]!=bk or ticks_diff(g,bG)>=600):
-#  aD('RH1',o.di.dg,'E',*N[0])
-#  bk=N[0][0]
-#  bG=g
-# if o.di.dg is None and ticks_diff(g,bM)>=800:
-#  aD('RH1','HELLO',aK)
 #  bM=g
-#def de(g):
-# global bP
-# if not ap and len(z)<32 and(ticks_diff(g,bP)>=500):
-#  aa('NEED',L,ae,44-len(z))
-#  bP=g
+# if uart.any():
+#  for line in bJ.dX(uart.read(64)):
+#   df(line,g)
+# if N and(N[0][0]!=bm or ticks_diff(g,bI)>=600):
+#  aE('RH1',o.dk.di,'E',*N[0])
+#  bm=N[0][0]
+#  bI=g
+# if o.dk.di is None and ticks_diff(g,bN)>=800:
+#  aE('RH1','HELLO',aL)
+#  bN=g
+#def dg(g):
+# global bR
+# if not ap and len(z)<32 and(ticks_diff(g,bR)>=500):
+#  aa('NEED',K,ae,44-len(z))
+#  bR=g
 #~
-#def cu(B,m):
-# global C,z,M
-# F=o.dk==Q
-# o.dr('playing',ticks_ms())
-# bQ,ct,bJ=(1700,100,210)if F else(3000,220,400)
-# duration=bm if F else bv
+#def cw(B,m):
+# global C,z,L
+# G=o.dm==Q
+# o.du('playing',ticks_ms())
+# bS,cv,bK=(1700,100,210)if G else(3000,220,400)
+# duration=bo if G else bx
 # C='PLAY'
-# G=0
+# M=0
 # R=0
-# aV=0
-# bV=0
-# bI=0
-# aJ=0
-# if not F:
+# aW=0
+# bX=0
+# bf=0
+# ay=0
+# if not G:
 #  z=[]
-# aX=None if F else cC()
-# if aX:
-#  aX.dN()
-# bi=None if F else cH()
-# bU=0
+# aY=None if G else cE()
+# if aY:
+#  aY.dP()
+# bk=None if G else cJ()
+# bW=0
 # aj=False
-# bN=[False]*4
-# bd=ticks_ms()
-# bf=ticks_add(ticks_ms(),-aT)
-# bO=ag(ab,ac)
-# aI=False
+# bO=[False]*4
+# be=ticks_ms()
+# bh=ticks_add(ticks_ms(),-aU)
+# bP=ag(ab,ac)
+# aJ=False
+# bQ=-1
 # B.clear()
-# B.dh(1,18,126,18)
-# B.dh(1,52,126,52)
-# B.dL(32,35,10)
+# B.dj(1,18,126,18)
+# B.dj(1,52,126,52)
+# B.dN(32,35,10)
 # B.show()
 # m.hud_combo=None
-# bD(m,0,0)
-# if F:
-#  aa('START',L)
-#  ck=ticks_add(ticks_ms(),8000)
-#  while not aP:
-#   bl()
-#   if o.dk!=Q or ticks_diff(ticks_ms(),ck)>=0:
+# bF(m,0,0)
+# if G:
+#  aa('START',K)
+#  cm=ticks_add(ticks_ms(),8000)
+#  while not aQ:
+#   bn()
+#   if o.dm!=Q or ticks_diff(ticks_ms(),cm)>=0:
 #    ak(True)
 #    return
 #   sleep(2)
-#  aQ=bY
+#  aR=ca
 # else:
-#  aQ=ticks_add(ticks_ms(),3500)
+#  aR=ticks_add(ticks_ms(),3500)
 # display.show('3')
-# aF=3
+# aG=3
 # while True:
-#  bl()
-#  if F and o.dk!=Q:
+#  bn()
+#  if G and o.dm!=Q:
 #   return
 #  g=ticks_ms()
 #  W=ag(ab,ac)
-#  if W!=-1 and bO==-1:
+#  if W!=-1 and bP==-1:
 #   if not aj and W==3:
 #    aj=True
-#    bU=g
-#    o.dr('paused',g)
-#    if F:
-#     aa('PAUSE',L)
+#    bW=g
+#    o.du('paused',g)
+#    if G:
+#     aa('PAUSE',K)
 #    else:
-#     bi.stop()
-#    bg()
+#     bk.stop()
+#    bi()
 #    pin8.write_digital(0)
 #    ax(m,'PAUSED',('LS RIGHT RESUME','LS DOWN EXIT'),0,'LS R / LS DOWN')
-#    display.show(Image.SQUARE)
 #   elif aj and W==1:
 #    aj=False
-#    aQ=ticks_add(aQ,ticks_diff(g,bU))
-#    o.dr('playing',g)
-#    if F:
-#     aa('RESUME',L)
+#    aR=ticks_add(aR,ticks_diff(g,bW))
+#    o.du('playing',g)
+#    if G:
+#     aa('RESUME',K)
 #    m.hud_combo=None
-#    bD(m,G,R)
-#    display.show(str(G%10))
-#    bf=ticks_add(g,-aT)
+#    bF(m,M,R)
+#    bh=ticks_add(g,-aU)
 #   elif aj and W==2:
-#    ak(F)
+#    ak(G)
 #    return
-#  bO=W
+#  bP=W
 #  if aj:
 #   sleep(18)
 #   continue
-#  H=ticks_diff(g,aQ)
-#  if H>=duration+900:
+#  F=ticks_diff(g,aR)
+#  if F>=duration+900:
 #   break
-#  if F:
-#   de(g)
+#  if G:
+#   dg(g)
 #   if not ap and(not any((A[2]==0 for A in z)))and(ticks_diff(g,at)>4000):
-#    aa('STARVED',L)
+#    aa('STARVED',K)
 #    ak(True)
 #    return
 #  else:
-#   bi.update(H)
-#   aX.dN()
-#  if H<0:
-#   aY=min(3,max(1,(-H+999)//1000))
-#   if aY!=aF:
-#    display.show(str(aY))
-#    aF=aY
-#  elif aF:
-#   display.show('0')
-#   aF=0
-#  if ticks_diff(g,bd)>=0:
-#   bg()
+#   bk.update(F)
+#   aY.dP()
+#  if F<0:
+#   aZ=min(3,max(1,(-F+999)//1000))
+#   if aZ!=aG:
+#    display.show(str(aZ))
+#    aG=aZ
+#  elif aG:
+#   aG=0
+#  if ticks_diff(g,be)>=0:
+#   bi()
 #   pin8.write_digital(0)
 #  for A in z:
-#   if A[2]==0 and H>A[0]+bJ:
+#   if A[2]==0 and F>A[0]+bK:
 #    A[2]=3
-#    aJ+=1
-#    G=0
-#    aI=True
-#    bd,bx=co(2,g)
+#    ay+=1
+#    M=0
+#    aJ=True
+#    be,bz=cq(2,g)
 #  for ad in range(4):
-#   bC=br[ad].read_digital()==0
-#   if bC and(not bN[ad]):
-#    aC=None
-#    aZ=bJ+1
+#   bE=bt[ad].read_digital()==0
+#   if bE and(not bO[ad]):
+#    aD=None
+#    ba=bK+1
 #    for A in z:
-#     X=abs(H-A[0])
-#     if A[2]==0 and(F or A[1]==ad)and(X<aZ):
-#      aC=A
-#      aZ=X
-#    if aC is not None:
-#     if aC[1]!=ad:
+#     X=abs(F-A[0])
+#     if A[2]==0 and(G or A[1]==ad)and(X<ba):
+#      aD=A
+#      ba=X
+#    if aD is not None:
+#     if aD[1]!=ad:
 #      t=2
-#     elif aZ<=ct:
+#     elif ba<=cv:
 #      t=0
 #     else:
 #      t=1
-#     bd,bx=co(t,g)
+#     be,bz=cq(t,g)
 #     if t==2:
-#      aC[2]=3
-#      aJ+=1
-#      G=0
+#      aD[2]=3
+#      ay+=1
+#      M=0
 #     else:
-#      aC[2]=1 if t==0 else 2
+#      aD[2]=1 if t==0 else 2
 #      if t==0:
-#       bV+=1
+#       bX+=1
 #       R+=100
 #      else:
-#       bI+=1
+#       bf+=1
 #       R+=50
-#      G+=1
-#      aV=max(aV,G)
-#     aI=True
-#   bN[ad]=bC
-#  if ticks_diff(g,bf)>=aT:
-#   bf=g
-#   B.dU()
-#   B.dL(32,35,10)
+#      M+=1
+#      aW=max(aW,M)
+#     aJ=True
+#   bO[ad]=bE
+#  if ticks_diff(g,bh)>=aU:
+#   bh=g
+#   B.dW()
+#   B.dN(32,35,10)
 #   aw=128
 #   av=-1
 #   for A in z:
-#    bj=A[3]
-#    ay=None
+#    bl=A[3]
+#    az=None
 #    if A[2]in(0,3):
-#     bE=A[0]-H
-#     if bE<=bQ:
-#      f=32+bE*91//bQ
+#     bG=A[0]-F
+#     if bG<=bS:
+#      f=32+bG*91//bS
 #      if f>=-7:
-#       ay=f
-#       B.dR(f,35,A[1],6)
+#       az=f
+#       B.dT(f,35,A[1],6)
 #      elif A[2]==3:
 #       A[2]=5
-#    if bj is not None:
-#     aw=min(aw,bj-8)
-#     av=max(av,bj+8)
-#    if ay is not None:
-#     aw=min(aw,ay-8)
-#     av=max(av,ay+8)
-#    A[3]=ay
-#   B.dX(aw,av)
-#   while z and z[0][0]<H-1600:
+#    if bl is not None:
+#     aw=min(aw,bl-8)
+#     av=max(av,bl+8)
+#    if az is not None:
+#     aw=min(aw,az-8)
+#     av=max(av,az+8)
+#    A[3]=az
+#   B.dZ(aw,av)
+#   while z and z[0][0]<F-1600:
 #    z.pop(0)
-#  if aI:
-#   display.show(str(G%10))
-#   bD(m,G,R)
-#   aI=False
+#  if aJ:
+#   bF(m,M,R)
+#   aJ=False
+#  if F>=0:
+#   aK=0 if ay else 1 if bf else 2
+#   if aK!=bQ:
+#    display.show(Image('99999:99999:99999:99999:99999' if aK==2 else '99999:90009:90009:90009:99999' if aK==1 else '00000:00000:00000:00000:00000'))
+#    bQ=aK
 #  sleep(1)
-# if F:
-#  aa('DONE',L,R,aJ)
+# if G:
+#  aa('DONE',K,R,ay)
 # else:
-#  bi.stop()
-#  M=None
+#  bk.stop()
+#  L=None
 #  gc.collect()
-# o.dr('results',ticks_ms())
-# bg()
+# o.du('results',ticks_ms())
+# bi()
 # pin8.write_digital(0)
 # B.clear()
-# B.dl('FINISH',29,14,2)
+# B.dn('FINISH',29,14,2)
 # B.show()
-# ax(m,'RESULT',('SCORE '+str(R),'BEST '+str(aV),'P'+str(bV)+' G'+str(bI),'MISS '+str(aJ)),0,'LS LEFT MENU')
+# ax(m,'RESULT',('SCORE '+str(R),'BEST '+str(aW),'P'+str(bX)+' G'+str(bf),'MISS '+str(ay)),0,'LS LEFT MENU')
 # U=-1
 # while True:
-#  bl()
-#  if F and o.dk!=Q:
+#  bn()
+#  if G and o.dm!=Q:
 #   return
 #  W=ag(ab,ac)
 #  if W==3 and U==-1:
@@ -813,44 +815,44 @@ _rh_boot()
 #  sleep(25)
 # ak(False)
 #~
-#for by in br:
-# by.set_pull(by.PULL_UP)
-#bT()
+#for bA in bt:
+# bA.set_pull(bA.PULL_UP)
+#bV()
 #i2c.init(freq=400000)
-#B=cf(60)
-#m=cf(61)
+#B=ch(60)
+#m=ch(61)
 #uart.init(baudrate=115200)
 #gc.collect()
 #ab=pin0.read_analog()
 #ac=pin1.read_analog()
 #U=ag(ab,ac)
-#bK=ticks_ms()
+#bL=ticks_ms()
 #~
 #while True:
-# bl()
+# bn()
 # g=ticks_ms()
 # D=ag(ab,ac)
-# bX=o.dk+C
-# if bX!=Y:
+# bZ=o.dm+C
+# if bZ!=Y:
 #  gc.collect()
 #  if C=='MENU':
-#   if o.dk==Q:
-#    ax(m,'PC SONGS',[cz[1]for cz in T],Z,'LS RIGHT SELECT')
+#   if o.dm==Q:
+#    ax(m,'PC SONGS',[cB[1]for cB in T],Z,'LS RIGHT SELECT')
 #   else:
 #    ax(m,'MEGALOVANIA',('STANDALONE','LS RIGHT START'),0,'P12 SPEAKER')
 #   B.clear()
-#   B.dl('READY',24,20,2)
+#   B.dn('READY',24,20,2)
 #   B.show()
 #   display.show(Image.HAPPY)
 #  elif C=='LOADING':
 #   ax(m,'PC LOADING',('WAIT FOR CHART',),0,'')
 #  elif C=='ARMED':
 #   ax(m,'PC READY',('LS RIGHT PLAY','LS LEFT CANCEL'),0,'')
-#  Y=bX
-# if D!=-1 and U==-1 and(ticks_diff(g,bK)>200):
-#  bK=g
+#  Y=bZ
+# if D!=-1 and U==-1 and(ticks_diff(g,bL)>200):
+#  bL=g
 #  if C=='MENU':
-#   if o.dk==Q:
+#   if o.dm==Q:
 #    if D==0:
 #     Z=(Z-1)%len(T)
 #     Y=''
@@ -860,20 +862,20 @@ _rh_boot()
 #    elif D==1:
 #     z=[]
 #     ap=False
-#     aP=False
-#     ae=aL=0
-#     L=(L+1)%65536
-#     o.dr('loading',g)
+#     aQ=False
+#     ae=aM=0
+#     K=(K+1)%65536
+#     o.du('loading',g)
 #     C='LOADING'
 #     at=g
-#     aa('SELECT',L,Z)
+#     aa('SELECT',K,Z)
 #   elif D==1:
-#    cu(B,m)
+#    cw(B,m)
 #    Y=''
 #    D=ag(ab,ac)
 #  elif C=='ARMED':
 #   if D==1:
-#    cu(B,m)
+#    cw(B,m)
 #    Y=''
 #    D=ag(ab,ac)
 #   elif D==3:
