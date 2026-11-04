@@ -113,7 +113,7 @@ python projects/standalone/src/tools/build_song.py
 
 构建默认保留手工谱面；`--make-chart` 会覆盖为默认简单谱面。构建只需 Python 标准库。构建后，将生成的 `projects/standalone/src/deploy/main.py` 重新导入 Chrome Python Editor 手动刷入。
 
-47 项桌面测试覆盖内嵌数据、刷入文件一致性、音乐调度、暂停恢复、整局计分、双模式连接和断线回退。当前实机结果与未解决的方向键问题见 [硬件验证记录](docs/hardware-testing.md)。
+52 项桌面测试覆盖内嵌数据、刷入文件一致性、音乐调度、暂停恢复、整局计分、双模式连接和断线回退。当前实机结果与未解决的方向键问题见 [硬件验证记录](docs/hardware-testing.md)。
 
 ## 发布范围与素材
 

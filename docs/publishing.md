@@ -44,11 +44,11 @@ python projects/standalone/src/tools/build_song.py
 
 第一条应输出本项目目录 `1354Labdev`，而非用户主目录。该目录原先没有独立的 Git 元数据，误继承了父目录仓库；本次建立本项目自己的 Git 仓库，未继承父目录的 remote。
 
-`.github/workflows/checks.yml` 在 push 和 pull request 时，使用 Python 3.10 和 3.13 检查 Python 语法、36 项合并版模拟、11 项独立版模拟及两版重新构建。生成文件的逐字节一致性以 Python 3.13 为基准，因为不同版本的 `ast.unparse` 会产生不同的括号格式；各版本构建器均检查生成代码的 AST 与源码一致。CI 不需要 PC 音频、pygame 或实体设备。
+`.github/workflows/checks.yml` 在 push 和 pull request 时，使用 Python 3.10 和 3.13 检查 Python 语法、41 项合并版模拟、11 项独立版模拟及两版重新构建。生成文件的逐字节一致性以 Python 3.13 为基准，因为不同版本的 `ast.unparse` 会产生不同的括号格式；各版本构建器均检查生成代码的 AST 与源码一致。CI 不需要 PC 音频、pygame 或实体设备。
 
 ## 提交与上传
 
-2026-11-04 合并版 RAM2 已解决启动编译期 MemoryError，用户确认手动重刷后正常。47 项桌面检查覆盖分块启动、连接协议、断线回退、内嵌资源、暂停与整局计分；PC 两首歌曲的本地音频和缓存预检通过。完整 PC 音画同步及历史方向键问题仍待验收，详见[硬件验证记录](hardware-testing.md)。
+2026-11-04 合并版 RAM2 已解决启动编译期 MemoryError，用户确认手动重刷后正常。52 项桌面检查覆盖分块启动、连接协议、断线回退、内嵌资源、暂停与整局计分；PC 两首歌曲的本地音频和缓存预检通过。完整 PC 音画同步及历史方向键问题仍待验收，详见[硬件验证记录](hardware-testing.md)。
 
 设备程序统一通过 Chrome 的 [micro:bit Python Editor](https://python.microbit.org/) 手动刷入。构建器只更新歌曲数据和单文件产物：合并版 `projects/unified/deploy/main.py`、独立版 `projects/standalone/src/deploy/main.py`；本仓库不再维护命令行刷写工具或运行时下载缓存。
 
