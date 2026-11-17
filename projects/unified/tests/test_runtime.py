@@ -268,7 +268,7 @@ class RuntimeTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "Missing payload"):
                 exec(compile(builder.LOADER, "<loader>", "exec"), {})
 
-    def test_packed_assets_match_original_standalone_exactly(self):
+    def test_megalovania_preserves_the_original_melody_and_chart_prefix(self):
         h = Harness()
         original = ast.parse(
             (ROOT.parent / "standalone/src/microbit_main.py").read_text()
@@ -291,14 +291,19 @@ class RuntimeTests(unittest.TestCase):
             ),
             namespace,
         )
-        self.assertIsNone(h.board["MELODY"])
-        h.board["load_melody"]()
-        self.assertIsInstance(h.board["MELODY"], bytearray)
-        for key in ("MELODY", "CHART", "SONG_LENGTH_MS"):
-            self.assertEqual(h.board[key], namespace[key])
-        for pitch in set(h.board["MELODY"][4::5]):
+        title, duration, packed_melody, packed_chart = h.board["SONGS"][0]
+        melody, chart = map(h.board["unpack"], (packed_melody, packed_chart))
+        self.assertEqual(title, "MEGALOVANIA")
+        self.assertLess(duration, namespace["SONG_LENGTH_MS"])
+        self.assertIsInstance(melody, bytearray)
+        self.assertEqual(melody, namespace["MELODY"][: len(melody)])
+        self.assertEqual(chart, namespace["CHART"][: len(chart)])
+        chart_end = sum(delta for delta, _ in struct.iter_unpack("<HB", chart))
+        self.assertLess(chart_end, duration)
+        for pitch in set(melody[4::5]):
             self.assertEqual(
-                h.board["FREQUENCIES"][pitch], namespace["FREQUENCIES"][pitch]
+                h.board["FREQUENCIES"][pitch - h.board["FIRST_PITCH"]],
+                namespace["FREQUENCIES"][pitch],
             )
 
     def test_compact_font_matches_original_pixels_for_every_glyph(self):
@@ -328,14 +333,13 @@ class RuntimeTests(unittest.TestCase):
                                     expected[xx + (yy >> 3) * 128] |= 1 << (yy & 7)
                 self.assertEqual(oled.buf, expected, (char, scale))
 
-    def test_pc_mode_never_unpacks_local_melody_and_stop_releases_it(self):
+    def test_pc_mode_never_unpacks_local_song_assets(self):
         h = Harness()
+        h.board["unpack"] = lambda *args: self.fail("PC must not unpack local songs")
         h.connect()
         h.select()
-        self.assertIsNone(h.board["MELODY"])
-        h.board["load_melody"] = lambda: self.fail("PC must not unpack local melody")
-        h.board["outputs_off"]()
-        self.assertIsNone(h.board["MELODY"])
+        h.joy = lambda: 3 if h.clock > h.duration + 7500 else -1
+        h.board["play"](Screen(), Screen())
 
     def test_actual_minified_file_boots_connects_and_plays_pc_round(self):
         self.run_deployment(pc=True)
@@ -343,7 +347,10 @@ class RuntimeTests(unittest.TestCase):
     def test_actual_minified_file_plays_local_music_and_exits_pause(self):
         self.run_deployment(pc=False)
 
-    def run_deployment(self, pc):
+    def test_actual_minified_file_can_select_and_play_mario(self):
+        self.run_deployment(pc=False, song_index=1)
+
+    def run_deployment(self, pc, song_index=0):
         # Execute the delivered file unchanged with fake native modules. This
         # catches renamed attribute/API mistakes that AST reversibility cannot.
         h = Harness(notes=[(1000, 0)], duration=2500)
@@ -358,6 +365,8 @@ class RuntimeTests(unittest.TestCase):
         def joy():
             if pc:
                 return 1 if 2000 <= h.clock < 2050 or 3500 <= h.clock < 3550 else -1
+            if song_index and 1000 <= h.clock < 1050:
+                return 2
             for stamp, direction in (
                 (2000, 1),
                 (6000, 3),
@@ -419,7 +428,14 @@ class RuntimeTests(unittest.TestCase):
             self.assertEqual(h.host.state, "MENU")
             self.assertEqual([name for name, _ in h.audio.calls].count("play"), 1)
         else:
-            self.assertTrue(any(name == "pitch" for name, _ in h.music.calls))
+            pitches = [args[0] for name, args in h.music.calls if name == "pitch"]
+            self.assertTrue(pitches)
+            title, _, packed_melody, _ = h.board["SONGS"][song_index]
+            self.assertEqual(title, ("MEGALOVANIA", "MARIO GROUND THEME")[song_index])
+            first_pitch = h.board["unpack"](packed_melody)[4]
+            self.assertEqual(
+                pitches[0], h.board["FREQUENCIES"][first_pitch - h.board["FIRST_PITCH"]]
+            )
             self.assertEqual(h.music.calls[-1][0], "stop")
             self.assertFalse(h.audio.calls)
         self.assertLessEqual(h.max_rx, 64)
@@ -576,7 +592,7 @@ class RuntimeTests(unittest.TestCase):
         self.assertIsNotNone(h.host_error)
 
     def test_host_attach_during_local_round_waits_through_pause_and_results(self):
-        self.run_local(pause_start=1000, pause_duration=1000, attach=True)
+        self.run_local(pause_start=1000, pause_duration=1000, attach=True, song_index=1)
 
     def test_full_local_round_with_pause_during_music(self):
         self.run_local(pause_start=10000, pause_duration=2000)
@@ -584,11 +600,16 @@ class RuntimeTests(unittest.TestCase):
     def test_full_local_round_without_host(self):
         self.run_local()
 
-    def run_local(self, pause_start=None, pause_duration=0, attach=False):
+    def test_full_mario_round_without_host(self):
+        self.run_local(song_index=1)
+
+    def run_local(self, pause_start=None, pause_duration=0, attach=False, song_index=0):
         h = Harness()
         b = h.board
+        b["menu_index"] = song_index
+        _, duration, _, packed_chart = b["SONGS"][song_index]
         chart, stamp = [], 0
-        for delta, lane in struct.iter_unpack("<HB", b["CHART"]):
+        for delta, lane in struct.iter_unpack("<HB", b["unpack"](packed_chart)):
             stamp += delta
             target = 3500 + stamp
             if pause_start is not None and target >= pause_start:
@@ -608,7 +629,7 @@ class RuntimeTests(unittest.TestCase):
                     < pause_start + pause_duration + 50
                 ):
                     return 1
-            if h.clock > b["SONG_LENGTH_MS"] + 4500 + pause_duration:
+            if h.clock > duration + 4500 + pause_duration:
                 return 3
             return -1
 
@@ -619,14 +640,14 @@ class RuntimeTests(unittest.TestCase):
             )
         b["play"](Screen(), Screen())
         result = next(options for heading, options in h.results if heading == "RESULT")
-        self.assertEqual(result[0], "SCORE 11400")
+        self.assertEqual(result[0], f"SCORE {100 * len(chart)}")
         self.assertEqual(result[3], "MISS 0")
         self.assertEqual(b["supervisor"].mode, "pc" if attach else "standalone")
         self.assertFalse(
             any(mode == "pc" and phase != "menu" for mode, phase in h.modes)
         )
         self.assertEqual(h.music.calls[-1][0], "stop")
-        self.assertIsNone(b["MELODY"])
+        self.assertEqual(b["menu_index"], 0 if attach else song_index)
 
 
 if __name__ == "__main__":

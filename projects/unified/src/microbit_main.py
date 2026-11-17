@@ -3,7 +3,7 @@ import music
 import gc
 from utime import ticks_ms, ticks_diff, ticks_add
 from random import getrandbits
-from connection import ModeSupervisor, PC, STANDALONE
+from connection import ModeSupervisor, PC
 from protocol import LineFramer
 
 
@@ -43,26 +43,16 @@ def unpack(text):
     return output
 
 
-LEAD_MS = 3000
-PERFECT_MS = 220
-GOOD_MS = 400
 FRAME_MS = 20
 USE_RGB = True
 # BEGIN GENERATED SONG
-SONG_LENGTH_MS = 159196
-MELODY_DATA = ('AAAAAHUAAD6CAAB2AAA+gwAA6wAASgUBYAFFhwHrAABEBQHrAABDAAQFAEEFAQAHIwBBgwAAdQAAQ4IAAHUAADwABA8APAAgMgB1AABBAAQoAEMABDcAOwAECgA7ACwyADoABAoAOgAsMgAAHMgA6gAAQQQBAAUeAAAMMgAAHMgAABYyAAAcyAAAFjIAAAjIAOoAAEoEAWEBRYgAITIASgAECgBKAAQyAFYABDIAUQAEMgBQAAQtAE8EAesAAE0FAQAFHgB1AABNAAQoAE8ABAoASAAECgBIACwyAEcABDsBR4IAAOsAAFYFACYyAEYABDIARgAMMgDqAABQAAQtAE8ABM0AABQyAEoABDIASgAlMgB1AABPAAfDAAAFzQAAKjIARwAHzQAABTIAYAFRAASQAVAABC0AABkyAEYAB80AABkyAAAHgQFNAAQoAAAFMgAABUYATQAE9AFNAAQiAU0AByIBAAUDAksCSowCAAdpAE0ABIEBAAUeAAAFSwBQAAQUAAAFCQEABRMBAAiHAGABT4cABC0AABYyAOsAAFEABIIAVAAJmwBWAAQUAFYABBQAVgAERgBRAARGAFaCAAAhBFSWBHYABC0AAAUUAOoAAFEABEYAUQAHQQAABVAASwJPjAIABSMAdQAAUQAE8AAADR4AAAcKAAAFWgAABR4AAAUUAAAFbgAACiMAAAXwAFQADIEB6wAATAAEBQBGAAQ3AAAFdgJKAAcZACEEVKoIAAdoAQAPQAFQAApKAQAHFwI6AABQQQAAOgAAT0EAADsAAE1CAAA6AABKQQAEHQEFAasDT5YEAAUJAQAFlgAABQkBAAUKAAAURgB1AABMAAS5AAAFlgAACtIAVAAEBQBVAAdPAXUAAFAACY8CTQAENgEABV8AQQAJfwNFAAfMAdYBTAoC1gFKAAQFAEwKAtUBTQkC1gFPAAcPAKsDURMABG0BAARGAAAKUABOAASCAAAF2wFMAAQPAEsAB+UBNgNJkQMhBEupCAAKqgAACg4BAA+RAAAFMgAACg4BOgAATQAEEwFKQgAEHgAEAawACQ4BAAd9AAAIDgEAFEYAABkOAeoAAFUABOYAAAVGAAANRQEABQ4BAAWDBAAHVQVFAAfMAQAKDgHVAUwABAkBTQAEDwBPAAcPAKwDURQEABGVAU4ACYwAAAgOAQAF+gAACA4BlgSBBToeBtUBQQAEQQBAFASrAz4TBFYHQU4QgAU6HQbWAUEKAA0ZAD5OEAAHGQU+AATXAABOmgYADDIAACaaBgAyMgAAKJoGABYyAAAuYgeIAbAAAE2wAARNA1UABAgCAAQtAEgABCMATAAE/gFKAARjBkUACScGSgAtLQAABIIARgAJ8gMABTcFAAgPAAAFBQDqAABGAAQyAEYACSgASAAEFABIAAQUAEgABBQASAAHFAAAFhkASgAJcwAABWkAAAVMBEkABBQASQAElAJJAASyAkkABBkASQAYQQBHAAQUAEcABC0ARwAELQBHAAQZAAAFFABGAAQUAEYABBQAAAqbAAAIrwAADxkAAAVVAAAFUAAACloAAAoUAAARGQBKAAQZAEoAB1kGAArDAAAHvgAACBkAABQUAAAgLQAACKUAAAWbAAAKqgAAFhkAAA2bAAAPrwAAB9EBAAVJBwAIaAEAEW4AAAVUAQAFBQBJAAQtAEkABC0AAAhoAQARQQBHAAdtAQAFBQAAB3EHAAUPAAAcHAIAERkAABRaAAAXtAAAMvwDADIyAAAFlwkABaEJACoyADwAB50DACouBAAyXgsALjIA')
-CHART = unpack('JwgAABMEAAAUBAETBAEUBAITBAIUBAMTBAMUBAAKGABiFAAWGAAABRUAAgAFFQADYRQAAAAFGwABAAUbAAAKGAAABS0AAAcYAGEAF0gAAAx4AGIUAByQAAAJSAAAFWAAABWQAAAz2AAADDAAACfYAAAMGAATBAAA')
-FREQUENCIES = {58: 233, 59: 247, 60: 262, 62: 294, 64: 330, 65: 349, 67: 392, 68: 415, 69: 440, 70: 466, 71: 494, 72: 523, 73: 554, 74: 587, 75: 622, 76: 659, 77: 698, 78: 740, 79: 784, 80: 831, 81: 880, 84: 1047, 85: 1109, 86: 1175}
+SONGS = (
+    ('MEGALOVANIA', 115370, 'AAAAAHUAAD6CAAB2AAA+gwAA6wAASgUBYAFFhwHrAABEBQHrAABDAAQFAEEFAQAHIwBBgwAAdQAAQ4IAAHUAADwABA8APAAgMgB1AABBAAQoAEMABDcAOwAECgA7ACwyADoABAoAOgAsMgAAHMgA6gAAQQQBAAUeAAAMMgAAHMgAABYyAAAcyAAAFjIAAAjIAOoAAEoEAWEBRYgAITIASgAECgBKAAQyAFYABDIAUQAEMgBQAAQtAE8EAesAAE0FAQAFHgB1AABNAAQoAE8ABAoASAAECgBIACwyAEcABDsBR4IAAOsAAFYFACYyAEYABDIARgAMMgDqAABQAAQtAE8ABM0AABQyAEoABDIASgAlMgB1AABPAAfDAAAFzQAAKjIARwAHzQAABTIAYAFRAASQAVAABC0AABkyAEYAB80AABkyAAAHgQFNAAQoAAAFMgAABUYATQAE9AFNAAQiAU0AByIBAAUDAksCSowCAAdpAE0ABIEBAAUeAAAFSwBQAAQUAAAFCQEABRMBAAiHAGABT4cABC0AABYyAOsAAFEABIIAVAAJmwBWAAQUAFYABBQAVgAERgBRAARGAFaCAAAhBFSWBHYABC0AAAUUAOoAAFEABEYAUQAHQQAABVAASwJPjAIABSMAdQAAUQAE8AAADR4AAAcKAAAFWgAABR4AAAUUAAAFbgAACiMAAAXwAFQADIEB6wAATAAEBQBGAAQ3AAAFdgJKAAcZACEEVKoIAAdoAQAPQAFQAApKAQAHFwI6AABQQQAAOgAAT0EAADsAAE1CAAA6AABKQQAEHQEFAasDT5YEAAUJAQAFlgAABQkBAAUKAAAURgB1AABMAAS5AAAFlgAACtIAVAAEBQBVAAdPAXUAAFAACY8CTQAENgEABV8AQQAJfwNFAAfMAdYBTAoC1gFKAAQFAEwKAtUBTQkC1gFPAAcPAKsDURMABG0BAARGAAAKUABOAASCAAAF2wFMAAQPAEsAB+UBNgNJkQMhBEupCAAKqgAACg4BAA+RAAAFMgAACg4BOgAATQAEEwFKQgAEHgAEAawACQ4BAAd9AAAIDgEAFEYAABkOAeoAAFUABOYAAAVGAAANRQEABQ4BAAWDBAAHVQVFAAfMAQAKDgHVAUwABAkBTQAEDwBPAAcPAKwDURQEABGVAU4ACYwAAAgOAQAF+gAACA4BlgSBBToeBtUBQQAEQQBAFASrAz4TBFYHQU4QgAU6HQbWAUEKAA0ZAD5OEAAHGQU+AATXAABOmgYADDIAACaaBgAyMgAAKJoGABYyAAAuYgeIAbAAAE2wAARNA1UABAgCAAQtAEgABCMATAAE/gFKAARjBkUACScGSg', 'JwgAABMEAAAUBAETBAEUBAITBAIUBAMTBAMUBAAKGABiFAAWGAAABRUAAgAFFQADYRQAAAAFGwABAAUbAAAKGAAABS0AAAcYAGEAF0gAAAx4AGIUAByQAAAJSAAAFWAAABWQAAAb2AA'),
+    ('MARIO GROUND THEME', 64820, 'AAAAAHgAAEyWAAQFACwBAAUFAHgAAEgACQ8AT1gCeAAAQwAEBQBIwgFkAABDwgF4AABAAAQFAEUABB4ARwAEBQBGAAQtAAAFDwBDyAAENwAABAUATwAEBQBRAAQUAE0ABB4ATwAOWgBKAAQFAEcABEYAAFFVAO4CeAAATwAECgBOAAQFAAAFKABLAAkoAEQABVUAAAQFAEgABA8AAAYKAAAFPAAABH0AABk3AFQABQUAAAQUAFSEAwA5XwBLAAQFAAAFCgBI3AUAo6UAsAQABxkAAAUoAAAFBQAABigAAAVLAAAMQQBkAAchAgAULQAABUkCRgUAKEsAAAdsAgAmjwJ4AAQ6AmQAT48CAAVVAAAZjwJkADNVAAAK4QAABVoARAAJ6wBNAAk8AEUABNIARwAFUAAABQUAAAkKAAAFZABNAAVzAAAYJwEAJFoAAA4UAAAGUAAABAUASgAEBQAABa8AQAAEHgBAAAQKADwAKloAZAAOtABkACC0AA', 'CAcAABoEAACwBAFGBQGwBAIaBAKwBANGBQOwAAQVAAAAGgAIGAAABRsAA9wFA8oIAAQwAAAFFQAABzAA3AUDNAgDRgUABBgAYAkABDAAGgQCRgUABDAAAAVLAAAHSAAABWMAAAdIAAAYYAAABhgA'),
+)
+FIRST_PITCH = 58
+FREQUENCIES = (233, 247, 262, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494, 523, 554, 587, 622, 659, 698, 740, 784, 831, 880, 932, 988, 1047, 1109, 1175)
 # END GENERATED SONG
-MELODY = None
-
-
-def load_melody():
-    global MELODY
-    if MELODY is None:
-        gc.collect()
-        MELODY = unpack(MELODY_DATA)
-        gc.collect()
 
 
 DPADS = (pin13, pin11, pin15, pin5)
@@ -265,10 +255,10 @@ def u16(data, offset):
 class Melody:
     """Consume packed events on the same millisecond clock as the chart."""
 
-    def __init__(self):
-        load_melody()
+    def __init__(self, packed):
+        self.data = unpack(packed)
         self.index = 0
-        self.next_at = u16(MELODY, 0) if MELODY else SONG_LENGTH_MS
+        self.next_at = u16(self.data, 0)
         self.end_at = -1
         self.pitch = 0
         self.sounding = False
@@ -280,31 +270,39 @@ class Melody:
     def update(self, elapsed):
         if elapsed < 0:
             return
+        data = self.data
         changed = False
-        while self.index < len(MELODY) and elapsed >= self.next_at:
-            self.end_at = self.next_at + u16(MELODY, self.index + 2)
-            self.pitch = MELODY[self.index + 4]
+        while self.index < len(data) and elapsed >= self.next_at:
+            self.end_at = self.next_at + u16(data, self.index + 2)
+            self.pitch = data[self.index + 4]
             self.index += 5
-            if self.index < len(MELODY):
-                self.next_at += u16(MELODY, self.index)
+            if self.index < len(data):
+                self.next_at += u16(data, self.index)
             changed = True
         if elapsed < self.end_at:
             if changed or not self.sounding:
-                music.pitch(FREQUENCIES[self.pitch], duration=-1, pin=pin12, wait=False)
+                music.pitch(
+                    FREQUENCIES[self.pitch - FIRST_PITCH],
+                    duration=-1,
+                    pin=pin12,
+                    wait=False,
+                )
                 self.sounding = True
         elif self.sounding:
             self.stop()
 
 
 class ChartReader:
-    def __init__(self):
+    def __init__(self, packed):
+        self.data = unpack(packed)
         self.index = 0
         self.time_ms = 0
 
     def fill(self):
-        while len(queue) < 12 and self.index < len(CHART):
-            self.time_ms += u16(CHART, self.index)
-            queue.append([self.time_ms, CHART[self.index + 2], 0, None])
+        data = self.data
+        while len(queue) < 12 and self.index < len(data):
+            self.time_ms += u16(data, self.index)
+            queue.append([self.time_ms, data[self.index + 2], 0, None])
             self.index += 3
 
 
@@ -421,9 +419,7 @@ def send_event(command, *values):
 
 
 def outputs_off():
-    global MELODY
     music.stop(pin12)
-    MELODY = None
     led_off()
     pin8.write_digital(0)
 
@@ -434,7 +430,9 @@ def return_to_menu(stop):
         send_event("STOP", round_id)
     outputs_off()
     queue = []
-    supervisor.set_phase("menu", ticks_ms())
+    actions = supervisor.set_phase("menu", ticks_ms())
+    if actions:
+        apply_actions(actions)
     screen_state = "MENU"
     last_screen = ""
 
@@ -537,7 +535,7 @@ def command(parts, now):
 
 
 def receive(line, now):
-    global expected_seq, event_seq, sent_event, catalog, catalog_count, menu_index
+    global expected_seq, event_seq, sent_event, catalog, catalog_count
     parts = line.split(",")
     if (
         len(parts) == 4
@@ -554,7 +552,6 @@ def receive(line, now):
                 sent_event = -1
                 catalog = []
                 catalog_count = 0
-                menu_index = 0
                 events[:] = []
             wire("RH1", "ACCEPT", session)
         return
@@ -606,11 +603,11 @@ def request_notes(now):
 
 
 def play(left, right):
-    global screen_state, queue, MELODY
+    global screen_state, queue
     pc = supervisor.mode == PC
     supervisor.set_phase("playing", ticks_ms())
     lead, perfect, good_window = (1700, 100, 210) if pc else (3000, 220, 400)
-    duration = song_length if pc else SONG_LENGTH_MS
+    duration = song_length
     screen_state = "PLAY"
     combo = 0
     score = 0
@@ -619,11 +616,13 @@ def play(left, right):
     good = 0
     miss = 0
     if not pc:
+        _, duration, melody_data, chart_data = SONGS[menu_index]
         queue = []
-    chart = None if pc else ChartReader()
-    if chart:
+        gc.collect()
+        chart = ChartReader(chart_data)
         chart.fill()
-    melody = None if pc else Melody()
+        melody = Melody(melody_data)
+        gc.collect()
     paused_at = 0
     paused = False
     last_inputs = [False] * 4
@@ -814,7 +813,7 @@ def play(left, right):
         send_event("DONE", round_id, score, miss)
     else:
         melody.stop()
-        MELODY = None
+        melody = chart = None
         gc.collect()
     supervisor.set_phase("results", ticks_ms())
     led_off()
@@ -869,21 +868,14 @@ while True:
         gc.collect()
         if screen_state == "MENU":
             if supervisor.mode == PC:
-                menu_draw(
-                    right,
-                    "PC SONGS",
-                    [s[1] for s in catalog],
-                    menu_index,
-                    "LS RIGHT SELECT",
-                )
+                title = "PC SONGS"
+                options = [s[1] for s in catalog]
+                footer = "LS RIGHT SELECT"
             else:
-                menu_draw(
-                    right,
-                    "MEGALOVANIA",
-                    ("STANDALONE", "LS RIGHT START"),
-                    0,
-                    "P12 SPEAKER",
-                )
+                title = "STANDALONE"
+                options = [s[0] for s in SONGS]
+                footer = "LS RIGHT START"
+            menu_draw(right, title, options, menu_index, footer)
             left.clear()
             left.text("READY", 24, 20, 2)
             left.show()
@@ -896,14 +888,12 @@ while True:
     if direction != -1 and previous == -1 and ticks_diff(now, last_action) > 200:
         last_action = now
         if screen_state == "MENU":
-            if supervisor.mode == PC:
-                if direction == 0:
-                    menu_index = (menu_index - 1) % len(catalog)
-                    last_screen = ""
-                elif direction == 2:
-                    menu_index = (menu_index + 1) % len(catalog)
-                    last_screen = ""
-                elif direction == 1:
+            if direction in (0, 2):
+                count = len(catalog) if supervisor.mode == PC else len(SONGS)
+                menu_index = (menu_index + direction - 1) % count
+                last_screen = ""
+            elif direction == 1:
+                if supervisor.mode == PC:
                     queue = []
                     chart_ended = False
                     synced = False
@@ -913,10 +903,10 @@ while True:
                     screen_state = "LOADING"
                     data_at = now
                     send_event("SELECT", round_id, menu_index)
-            elif direction == 1:
-                play(left, right)
-                last_screen = ""
-                direction = joy_direction(center_x, center_y)
+                else:
+                    play(left, right)
+                    last_screen = ""
+                    direction = joy_direction(center_x, center_y)
         elif screen_state == "ARMED":
             if direction == 1:
                 play(left, right)

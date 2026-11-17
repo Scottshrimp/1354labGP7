@@ -44,7 +44,7 @@ python projects/standalone/src/tools/build_song.py
 
 第一条应输出本项目目录 `1354Labdev`，而非用户主目录。该目录原先没有独立的 Git 元数据，误继承了父目录仓库；本次建立本项目自己的 Git 仓库，未继承父目录的 remote。
 
-`.github/workflows/checks.yml` 在 push 和 pull request 时，使用 Python 3.10 和 3.13 检查 Python 语法、41 项合并版模拟、11 项独立版模拟及两版重新构建。生成文件的逐字节一致性以 Python 3.13 为基准，因为不同版本的 `ast.unparse` 会产生不同的括号格式；各版本构建器均检查生成代码的 AST 与源码一致。CI 不需要 PC 音频、pygame 或实体设备。
+`.github/workflows/checks.yml` 在 push 和 pull request 时，使用 Python 3.10 和 3.13 检查 Python 语法、43 项合并版模拟、11 项独立版模拟及两版重新构建。生成文件的逐字节一致性以 Python 3.13 为基准，因为不同版本的 `ast.unparse` 会产生不同的括号格式；各版本构建器均检查生成代码的 AST 与源码一致。CI 不需要 PC 音频、pygame 或实体设备。
 
 ## 提交与上传
 

@@ -1,6 +1,6 @@
 # Unified Rhythm Hold · 实机测试版
 
-一个 micro:bit V2 程序加一个 PC host。无 host 时运行内嵌的 MEGALOVANIA；host 完成准备后，在菜单切换到 PC 曲库。PC 断线时结束当前局，约 2.5 秒后回到独立菜单。
+一个 micro:bit V2 程序加一个 PC host。无 host 时可从独立曲库选歌。host 准备就绪后，在菜单切换到 PC 曲库。PC 断线时结束当前局，约 2.5 秒后回到独立菜单。
 
 当前为 **RAM2 分块编译测试版**。用户已确认重新刷入后正常，原先启动时的 `MemoryError` 已解决。完整 PC 音画同步和连续切换仍需实机验收；原有 `pc-integrated/` 和 `standalone/` 保留作基线。刷入使用 Chrome Python Editor。
 
@@ -23,7 +23,12 @@
 1. 让摇杆回中，用 USB 连接 micro:bit V2 和 GamePad。
 2. 在 Chrome 打开 [micro:bit Python Editor](https://python.microbit.org/)。
 3. 在一个干净的编辑器项目中打开/导入 **[deploy/main.py](deploy/main.py)**，点击 **Send to micro:bit**。只需要这个文件，不需要把源码模块逐个添加到编辑器。
-4. 未启动 host 时，右 OLED 应显示 `MEGALOVANIA / STANDALONE`，左 OLED 显示 `READY`。摇杆向右开始独立游戏。
+4. 未启动 host 时，右 OLED 显示 `STANDALONE` 曲库，左 OLED 显示 `READY`。摇杆上/下选歌，向右开始。
+
+独立曲库包含两首歌，通过 `music.pitch()` 在 P12 逐个播放音符。旋律和谱面共用游戏时钟。
+
+- `MEGALOVANIA` 保留原旋律与谱面的前约 1 分 55 秒，在乐句停顿处结束。
+- `MARIO GROUND THEME` 从视频音轨提取主旋律，约 1 分 5 秒，有 49 个对齐旋律起音的单键提示。
 
 `deploy/main.py` 是自动生成的单文件，约 20 KB；首行为 `# Unified RAM2`。后续大量注释是分块加载的数据，必须保留。启动器只读取自身，不会创建额外设备文件。日常修改使用 `src/microbit_main.py`，不要手改刷入文件。请使用编辑器提供的稳定 MicroPython 运行时；旧 beta 运行时曾出现摇杆 ADC 问题。
 
@@ -64,7 +69,7 @@ python3 projects/unified/pc_host.py --check
 
 | 场景 | 操作 / 应看到的结果 |
 | --- | --- |
-| 独立模式 | 未运行 host，摇杆右启动；P12 播放单音旋律 |
+| 独立模式 | 未运行 host，摇杆上/下选歌，右开始。P12 播放单音旋律 |
 | PC 选歌 | host 就绪后在 `PC SONGS` 用摇杆上/下选歌，右选择 |
 | PC 开局 | `PC READY` 时再次向右；电脑播放歌曲，设备显示音符 |
 | 暂停 / 恢复 | 游戏中摇杆左暂停，右恢复；暂停菜单下退出 |
@@ -97,7 +102,8 @@ python3 projects/unified/pc_host.py --check
 - `connection.py`：两端会话租约和菜单切换规则；设备适配器传入 `utime.ticks_diff`。
 - `protocol.py`：60 字节有界分帧及编码。
 - `pc_host.py`：PC 曲库、音频与可靠串口循环。仅此 host 兼容合并版 RH1 协议，原 `pc_player.py` 不兼容。
-- `tools/build.py`：复用独立版的内嵌资源，打包成一个设备文件；不连接硬件。
+- `music/mario-ground-theme.json` 包含马力欧主题的旋律和谱面。每个旋律事件包含开始毫秒数、时长毫秒数和 MIDI 音高。
+- `tools/build.py` 复用独立版的 MIDI 转换和压缩，把独立曲库打包成一个设备文件。
 - `tests/`：状态、协议、真实源码的整局模拟，以及实际压缩文件的模拟启动与双模式运行。
 
 ```sh
@@ -105,7 +111,7 @@ python3 projects/unified/tools/build.py
 python3 -m unittest discover -s projects/unified/tests -v
 ```
 
-构建仅需标准库：歌曲压缩数据改用 Base64，频率表只保留实际音高；标识符缩短和空白压缩有可逆 AST 检查，分块还会检查重新拼接后的 AST 一致。构建会更新源码的生成资源块与 `deploy/main.py`，目前设置 20,000 bytes 的生成文件上限。Python 3.13 为生成快照的参考环境。
+构建仅需标准库。压缩曲目以 Base64 存储，开局时解包所选曲目的旋律和谱面。标识符缩短、空白压缩和编译分块都检查 AST 一致性。构建会更新源码的生成资源块与 `deploy/main.py`，上限为 20,000 bytes。Python 3.13 为生成快照的参考环境。
 
 串口为 115200 baud。host 每次仅发送一帧，收到 ACK 才继续；超时重发由设备按序去重。设备事件同样有序号、确认和重发，防止丢失暂停或开始消息。会话失效时轮换 challenge，旧会话帧不能启用 PC。host 不再边转换歌曲边占用串口，也不使用阻塞的谱面批次 sleep。
 

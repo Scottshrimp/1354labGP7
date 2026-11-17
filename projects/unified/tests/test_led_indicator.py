@@ -1,5 +1,6 @@
 """AP/FC matrix behavior through the actual PC and standalone game loops."""
 
+import base64
 import struct
 import unittest
 
@@ -36,7 +37,9 @@ def run_round(pc=True, actions=None, pause=False, harness=None):
         for stamp, direction in NOTES:
             data.extend(struct.pack("<HB", stamp - previous, direction))
             previous = stamp
-        b["CHART"], b["SONG_LENGTH_MS"] = data, 6000
+        title, _, melody, _ = b["SONGS"][0]
+        chart = base64.b64encode(data.replace(b"\0", b"\0\0")).decode().rstrip("=")
+        b["SONGS"] = [(title, 6000, melody, chart)]
     start = h.clock + 3500
 
     def raw_time():

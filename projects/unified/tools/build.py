@@ -1,63 +1,103 @@
 #!/usr/bin/env python3
 """Build a single Python Editor import file. Never opens serial or flashes hardware."""
 import ast
-import builtins
 import base64
-import re
-from collections import Counter
+import builtins
+import importlib.util
 import io
+import json
 import keyword
+import struct
 import tokenize
+from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+STANDALONE_ROOT = ROOT.parent / "standalone"
+# End on a D before a pause in the original arrangement to fit both songs.
+MEGALOVANIA_END_MS = 114770
+
+
+def song_assets():
+    # Use the same MIDI arrangement and compressor as the standalone baseline.
+    spec = importlib.util.spec_from_file_location(
+        "standalone_build_song", STANDALONE_ROOT / "src/tools/build_song.py"
+    )
+    converter = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(converter)
+
+    source = STANDALONE_ROOT / "music/megalovania"
+    segments, *_ = converter.melody_segments(source / "source.mid")
+    original_chart = json.loads((source / "chart.json").read_text(encoding="utf-8-sig"))
+    duration = max(segments[-1][1] + 600, original_chart["duration_ms"])
+    notes = original_chart["notes"]
+    if MEGALOVANIA_END_MS is not None:
+        segments = [segment for segment in segments if segment[1] <= MEGALOVANIA_END_MS]
+        last_note_end = segments[-1][1]
+        duration = last_note_end + 600
+        notes = [row for row in notes if row["time_ms"] < last_note_end]
+    songs = [
+        {
+            "title": "MEGALOVANIA",
+            "duration_ms": duration,
+            "melody": [(start, end - start, pitch) for start, end, pitch in segments],
+            "notes": notes,
+        }
+    ]
+    songs.extend(
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in sorted((ROOT / "music").glob("*.json"))
+    )
+    pitches = set()
+    packed_songs = []
+
+    def encoded(data):
+        return base64.b64encode(converter.compress(data)).decode().rstrip("=")
+
+    for song in songs:
+        title, duration = song["title"], song["duration_ms"]
+        music, chart = bytearray(), bytearray()
+        previous = end = 0
+        for start, length, pitch in song["melody"]:
+            if not (end <= start < start + length <= duration and 0 <= pitch < 128):
+                raise ValueError(
+                    f"Invalid melody event for {title}: {(start, length, pitch)}"
+                )
+            music.extend(struct.pack("<HHB", start - previous, length, pitch))
+            previous, end = start, start + length
+            pitches.add(pitch)
+        previous = 0
+        for row in sorted(song["notes"], key=lambda row: row["time_ms"]):
+            stamp = row["time_ms"]
+            if not 0 <= stamp < duration or (chart and stamp - previous < 1000):
+                raise ValueError(f"Invalid Gentle chart time for {title}: {stamp}")
+            direction = converter.DIRECTIONS.index(row["direction"])
+            chart.extend(struct.pack("<HB", stamp - previous, direction))
+            previous = stamp
+        if not music or not chart:
+            raise ValueError(f"Missing melody or chart for {title}")
+        packed_songs.append((title, duration, encoded(music), encoded(chart)))
+
+    first_pitch = min(pitches)
+    frequencies = tuple(
+        round(440 * 2 ** ((pitch - 69) / 12))
+        for pitch in range(first_pitch, max(pitches) + 1)
+    )
+    return (
+        "# BEGIN GENERATED SONG\n"
+        + "SONGS = (\n"
+        + "".join(f"    {song!r},\n" for song in packed_songs)
+        + ")\n"
+        + f"FIRST_PITCH = {first_pitch}\n"
+        + f"FREQUENCIES = {frequencies!r}\n"
+        + "# END GENERATED SONG"
+    )
 
 
 def assembled_source():
     source = (ROOT / "src/microbit_main.py").read_text()
-    # Reuse the current packed song; keep the original standalone project intact.
-    song = (ROOT.parent / "standalone/src/microbit_main.py").read_text()
     begin, end = "# BEGIN GENERATED SONG", "# END GENERATED SONG"
-    assets = song[song.index(begin) : song.index(end) + len(end)]
-    # Base64 reduces source storage without requiring binascii on the board.
-    assets = re.sub(
-        r"unpack\('([0-9a-f]+)'\)",
-        lambda m: "unpack("
-        + repr(base64.b64encode(bytes.fromhex(m[1])).decode().rstrip("="))
-        + ")",
-        assets,
-    )
-    # Only these exact MIDI pitches are used; keep original integer frequencies.
-    # A sparse table reduces source/storage while preserving indexing semantics.
-    nodes = ast.parse(assets).body
-    table = next(
-        n
-        for n in nodes
-        if isinstance(n, ast.Assign) and n.targets[0].id == "FREQUENCIES"
-    )
-    values = ast.literal_eval(table.value)
-    # A sparse dictionary retains the original MIDI pitch indices.
-    # Derive used pitches from the existing packed melody using its LZ decoder.
-    packed = bytes.fromhex(re.search(r"MELODY = unpack\('([0-9a-f]+)'\)", song)[1])
-    decoded, i = bytearray(), 0
-    while i < len(packed):
-        value = packed[i]
-        i += 1
-        if value:
-            decoded.append(value)
-        else:
-            size = packed[i]
-            i += 1
-            if not size:
-                decoded.append(0)
-            else:
-                distance = packed[i] | (packed[i + 1] << 8)
-                i += 2
-                for _ in range(size):
-                    decoded.append(decoded[-distance])
-    frequencies = {pitch: values[pitch] for pitch in sorted(set(decoded[4::5]))}
-    assets = re.sub(r"FREQUENCIES = .*", "FREQUENCIES = " + repr(frequencies), assets)
-    assets = assets.replace("MELODY = unpack(", "MELODY_DATA = (")
+    assets = song_assets()
     source = (
         source[: source.index(begin)] + assets + source[source.index(end) + len(end) :]
     )
@@ -314,14 +354,6 @@ def deployment_payload(deployment):
 
 def build():
     assembled = assembled_source()
-    # Update only the generated song block in readable source as well.
-    path = ROOT / "src/microbit_main.py"
-    source = path.read_text()
-    begin, end = "# BEGIN GENERATED SONG", "# END GENERATED SONG"
-    assets = assembled[assembled.index(begin) : assembled.index(end) + len(end)]
-    path.write_text(
-        source[: source.index(begin)] + assets + source[source.index(end) + len(end) :]
-    )
     tree = ast.parse(assembled)
     for node in ast.walk(tree):
         body = getattr(node, "body", None)
@@ -338,6 +370,14 @@ def build():
         raise ValueError(
             "Unified deployment exceeds the 20 KB single-file source budget"
         )
+    # Keep the readable source and deployment in sync after validation.
+    path = ROOT / "src/microbit_main.py"
+    source = path.read_text()
+    begin, end = "# BEGIN GENERATED SONG", "# END GENERATED SONG"
+    assets = assembled[assembled.index(begin) : assembled.index(end) + len(end)]
+    path.write_text(
+        source[: source.index(begin)] + assets + source[source.index(end) + len(end) :]
+    )
     target = ROOT / "deploy/main.py"
     target.parent.mkdir(exist_ok=True)
     target.write_text(deployment)
