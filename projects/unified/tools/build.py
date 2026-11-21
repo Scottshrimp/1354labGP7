@@ -18,13 +18,17 @@ STANDALONE_ROOT = ROOT.parent / "standalone"
 MEGALOVANIA_END_MS = 114770
 
 
-def song_assets():
-    # Use the same MIDI arrangement and compressor as the standalone baseline.
+def standalone_builder():
     spec = importlib.util.spec_from_file_location(
         "standalone_build_song", STANDALONE_ROOT / "src/tools/build_song.py"
     )
     converter = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(converter)
+    return converter
+
+
+def song_assets():
+    converter = standalone_builder()
 
     source = STANDALONE_ROOT / "music/megalovania"
     segments, *_ = converter.melody_segments(source / "source.mid")
@@ -119,7 +123,9 @@ def assembled_source():
     protocol = (ROOT / "protocol.py").read_text()
     start, end = protocol.index("def encode_line"), protocol.index("class LineFramer")
     protocol = protocol[:start] + protocol[end:]
-    return connection + "\n" + protocol + "\n" + "\n".join(lines) + "\n"
+    source = "\n".join(lines) + "\n"
+    decoder, game = source.split("FRAME_MS =", 1)
+    return decoder + connection + "\n" + protocol + "\nFRAME_MS =" + game
 
 
 def compact_tree(tree):
@@ -287,6 +293,8 @@ def _rh_boot():
                 if _rh_line == '#~END\n':
                     _rh_file.close()
                 gc.collect()
+                if _rh_code.startswith('@'):
+                    _rh_code = _rh_unpack(_rh_code[1:].replace('\n', '')).decode('ascii')
                 exec(_rh_code, globals())
                 _rh_code = ''
                 gc.collect()
@@ -324,18 +332,43 @@ def compilation_blocks(compact, limit=2400):
     return blocks
 
 
+def compress_source(block):
+    """Pack ASCII literals and two-byte references within one source block."""
+    data = block.encode("ascii")
+    output = bytearray()
+    index = 0
+    while index < len(data):
+        for size in range(min(10, len(data) - index), 2, -1):
+            match = data.rfind(data[index:index + size], max(0, index - 4095), index)
+            if match != -1:
+                distance = index - match
+                output.extend((128 | ((size - 3) << 4) | (distance >> 8), distance & 255))
+                index += size
+                break
+        else:
+            output.append(data[index])
+            index += 1
+    return output
+
+
 def staged_deployment(compact):
     blocks = compilation_blocks(compact)
-    # Short comment prefixes keep the single file within filesystem
-    # capacity; the payload after BEGIN is never interpreted at boot.
+    # Keep the first block readable so it can bootstrap the shared decoder.
     result = LOADER + "#~BEGIN\n"
     for index, block in enumerate(blocks):
-        result += "".join("#" + line for line in block.splitlines(keepends=True))
+        plain = "".join("#" + line for line in block.splitlines(keepends=True))
+        if index and block.isascii():
+            encoded = "@" + base64.b64encode(compress_source(block)).decode().rstrip("=")
+            packed = "".join("#" + encoded[i:i + 76] + "\n" for i in range(0, len(encoded), 76))
+            if len(packed) < len(plain):
+                plain = packed
+        result += plain
         result += "#~END\n" if index == len(blocks) - 1 else "#~\n"
     return result
 
 
 def deployment_payload(deployment):
+    decoder = {}
     blocks, current = [], ""
     active = False
     for line in deployment.splitlines(keepends=True):
@@ -345,6 +378,20 @@ def deployment_payload(deployment):
         if not active:
             continue
         if line in ("#~\n", "#~END\n"):
+            if not blocks:
+                # Execute only the startup decoder definitions, without hardware imports.
+                tree = ast.parse(current)
+                bindings = []
+                for node in tree.body:
+                    if isinstance(node, ast.FunctionDef):
+                        bindings.append(node)
+                    elif isinstance(node, ast.Assign):
+                        bindings.append(node)
+                        break
+                exec(compile(ast.Module(bindings, []), "<decoder>", "exec"), decoder)
+                unpack = decoder["_rh_unpack"]
+            if current.startswith("@"):
+                current = unpack(current[1:].replace("\n", "")).decode("ascii")
             blocks.append(current)
             current = ""
         elif line.startswith("#"):

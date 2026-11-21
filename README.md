@@ -1,4 +1,4 @@
-# GE1354 Rhythm Hold
+# GE1354 Rhythm Hit
 
 基于 micro:bit V2 和 GE1354 GamePad 的节奏游戏。已提供双模式合并测试版，原 PC 整合版与独立运行版保留为基线。
 

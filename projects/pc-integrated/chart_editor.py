@@ -1,4 +1,4 @@
-"""Rhythm Hold chart editor: AAC playback, waveform, tap-only chart editing."""
+"""Rhythm Hit chart editor: AAC playback, waveform, tap-only chart editing."""
 import json, math, shutil, subprocess, tempfile, wave, tkinter as tk
 from pathlib import Path
 from tkinter import ttk, filedialog, messagebox
@@ -7,7 +7,7 @@ DIRECTIONS = ('UP','RIGHT','DOWN','LEFT')
 
 class Editor:
     def __init__(self, root):
-        self.root=root;root.title('Rhythm Hold - Chart Editor - Tap Only')
+        self.root=root;root.title('Rhythm Hit - Chart Editor - Tap Only')
         self.notes=[];self.path=None;self.audio_path=None;self.audio_wav=None;self.audio_preview=None
         self.duration=156565;self.bpm=92.0;self.selected=None
         self.cursor=tk.DoubleVar(value=0)

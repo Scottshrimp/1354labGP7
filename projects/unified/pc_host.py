@@ -143,6 +143,9 @@ class HostSession:
         self.audio.stop()
         self.audio_at = self.pause_at = None
         self.playing = False
+        self.clear_round()
+
+    def clear_round(self):
         self.round = self.song = None
         self.pending.clear()
         self.state = "MENU"
@@ -176,22 +179,37 @@ class HostSession:
 
     def select(self, round_id, index):
         self.stop_round()
+        self.audio.load(self.songs[index]["wav"])
+        self.prepare_chart(round_id, index)
+        self.log("Ready: " + self.song["title"])
+
+    def prepare_chart(self, round_id, index, preload=24):
         self.round = round_id
         self.song = self.songs[index]
         self.cursor = 0
         self.end_queued = False
-        self.audio.load(self.song["wav"])
         self.state = "READY"
         self.queue("BEGIN", round_id, self.song["duration"], len(self.song["notes"]))
-        # First batch is 24 cues; later refills are capped at 12.
-        for index, (stamp, direction) in enumerate(self.song["notes"][:24]):
+        for index, (stamp, direction) in enumerate(self.song["notes"][:preload]):
             self.queue("N", round_id, index, stamp, direction)
             self.cursor = index + 1
         if self.cursor == len(self.song["notes"]):
             self.queue("END", round_id)
             self.end_queued = True
         self.queue("ARM", round_id)
-        self.log("Ready: " + self.song["title"])
+
+    def announce(self):
+        self.queue("CATBEGIN", len(self.songs))
+        for index, song in enumerate(self.songs):
+            self.queue("CAT", index, song["title"])
+        self.queue("READY")
+
+    def acknowledged(self, command):
+        if command == "READY":
+            self.state = "MENU"
+
+    def update(self, fields, now):
+        pass
 
     def event(self, fields, now):
         kind = fields[0]
@@ -258,10 +276,7 @@ class HostSession:
                     self.session = fields[2]
                     self.last_rx = now
                     self.state = "CATALOG"
-                    self.queue("CATBEGIN", len(self.songs))
-                    for index, song in enumerate(self.songs):
-                        self.queue("CAT", index, song["title"])
-                    self.queue("READY")
+                    self.announce()
                     self.log("Connected; switching is deferred until the device menu")
                 continue
             if len(fields) < 4 or fields[:2] != ["RH1", self.session]:
@@ -272,8 +287,7 @@ class HostSession:
                         continue
                     if fields[4] != "OK":
                         raise ConnectionLost("Device rejected " + self.inflight[0])
-                    if self.inflight[0] == "READY":
-                        self.state = "MENU"
+                    self.acknowledged(self.inflight[0])
                     self.inflight = None
                     self.seq = (self.seq + 1) % 65536
                     self.last_rx = now
@@ -289,6 +303,8 @@ class HostSession:
                     if ack not in self.pending:
                         self.pending.appendleft(ack)
                     self.last_rx = now
+                else:
+                    self.update(fields[2:], now)
             except (ValueError, IndexError) as error:
                 raise ConnectionLost("Invalid device message: " + line) from error
 
@@ -319,18 +335,22 @@ class HostSession:
         return encode_line("RH1", self.session, self.seq, *self.inflight)
 
 
-def choose_port(requested=None):
+def find_ports():
     from serial.tools import list_ports
 
-    if requested:
-        return requested
-    ports = [
+    return [
         p.device
         for p in list_ports.comports()
         if p.vid == 0x0D28
         or "micro:bit" in (p.description or "").lower()
         or "microbit" in (p.description or "").lower()
     ]
+
+
+def choose_port(requested=None):
+    if requested:
+        return requested
+    ports = find_ports()
     if len(ports) > 1:
         raise ValueError("Multiple micro:bits found; select one with --port")
     return ports[0] if ports else None

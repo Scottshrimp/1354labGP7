@@ -1,4 +1,4 @@
-Rhythm Hold v4.1 — One song, one chart.
+Rhythm Hit v4.1 — One song, one chart.
 
 Flash microbit_main.py to micro:bit V2. Close browser serial monitor.
 Start PC: python pc_player.py --port COM3

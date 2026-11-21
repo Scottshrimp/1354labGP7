@@ -1,4 +1,4 @@
-Rhythm Hold v4.1 — Single Chart Per Song
+Rhythm Hit v4.1 — Single Chart Per Song
 Derived from user-tested v4.0. Difficulty menu and routes removed.
 Tap only; unchanged timing, rendering, USB audio host, joystick pause and score.
 Board: flash microbit_main.py

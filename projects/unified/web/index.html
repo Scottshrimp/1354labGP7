@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rhythm Hit · 雙人對局</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/console.js"></script>
+</head>
+<body>
+  <main class="console">
+    <header class="masthead">
+      <a class="brand" href="/" aria-label="Rhythm Hit">
+        <span class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <span>Rhythm Hit</span>
+      </a>
+      <span class="connection" id="connection" role="status">連線中</span>
+    </header>
+
+    <section class="round" aria-labelledby="heading">
+      <div>
+        <p class="phase" id="phase" aria-live="polite">雙人對局</p>
+        <h1 id="heading">等待兩台 micro:bit</h1>
+        <p class="hint" id="hint">請用 USB 將兩台設備接上 host。</p>
+      </div>
+      <div class="timer" id="timer" hidden aria-hidden="true"></div>
+    </section>
+
+    <form id="pick-song" class="song-picker" hidden>
+      <label for="song">對局曲目</label>
+      <div class="song-controls">
+        <div class="select-wrap">
+          <select id="song" required></select>
+        </div>
+        <button id="confirm" type="submit">確認曲目</button>
+      </div>
+      <p id="error" role="alert" hidden></p>
+    </form>
+
+    <section class="timeline" id="timeline" aria-label="歌曲進度" hidden>
+      <progress id="progress" aria-label="歌曲進度" value="0" max="1"></progress>
+      <div class="times"><span id="elapsed">0:00</span><span id="duration">0:00</span></div>
+    </section>
+
+    <section class="players" aria-label="玩家狀態與分數">
+      <article class="player" id="player-1">
+        <header><h2>玩家 1</h2><span class="state">等待連線</span></header>
+        <div class="points" hidden><p>分數</p><output class="score">0</output></div>
+        <p class="stats" hidden></p>
+      </article>
+      <article class="player" id="player-2">
+        <header><h2>玩家 2</h2><span class="state">等待連線</span></header>
+        <div class="points" hidden><p>分數</p><output class="score">0</output></div>
+        <p class="stats" hidden></p>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

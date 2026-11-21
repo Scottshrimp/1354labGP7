@@ -1,4 +1,4 @@
-"""Rhythm Chart Studio — standalone tap-note editor for Rhythm Hold v4.1.
+"""Rhythm Chart Studio — standalone tap-note editor for Rhythm Hit v4.1.
 Python 3.10+; ffmpeg and pygame optional until audio is loaded/played.
 """
 import bisect
@@ -172,7 +172,7 @@ class Studio:
         self.redraw()
     def open_chart(self):
         if not self.confirm_unsaved():return
-        name=filedialog.askopenfilename(filetypes=[('Rhythm Hold JSON','*.json')])
+        name=filedialog.askopenfilename(filetypes=[('Rhythm Hit JSON','*.json')])
         if name:
             try:self.load(name)
             except Exception as e:messagebox.showerror('Open failed',str(e))
@@ -193,7 +193,7 @@ class Studio:
             self.dirty=False;self.redraw();self.status.set('Saved '+str(self.chart_path))
         except Exception as e:messagebox.showerror('Save failed',str(e))
     def save_as(self):
-        name=filedialog.asksaveasfilename(defaultextension='.json',filetypes=[('Rhythm Hold JSON','*.json')],initialfile='chart.json')
+        name=filedialog.asksaveasfilename(defaultextension='.json',filetypes=[('Rhythm Hit JSON','*.json')],initialfile='chart.json')
         if name:self.chart_path=Path(name);self.save()
     def ms(self):
         return max(0,min(self.duration,int(self.cursor)))

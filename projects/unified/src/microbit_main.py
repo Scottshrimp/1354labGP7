@@ -43,6 +43,26 @@ def unpack(text):
     return output
 
 
+def unpack_source(text):
+    source = decode64(text)
+    output = bytearray()
+    i = 0
+    while i < len(source):
+        value = source[i]
+        i += 1
+        if value < 128:
+            output.append(value)
+        else:
+            distance = ((value & 15) << 8) | source[i]
+            i += 1
+            for _ in range(((value >> 4) & 7) + 3):
+                output.append(output[-distance])
+    return output
+
+
+globals()["_rh_unpack"] = unpack_source
+
+
 FRAME_MS = 20
 USE_RGB = True
 # BEGIN GENERATED SONG
@@ -393,6 +413,7 @@ next_note = 0
 chart_ended = False
 synced = False
 sync_at = 0
+multiplayer = False
 data_at = 0
 last_need = 0
 last_screen = ""
@@ -447,6 +468,8 @@ def apply_actions(actions):
         menu_index = 0
     if "enter_standalone" in actions:
         catalog = []
+    if "enter_pc" in actions and multiplayer:
+        send_event("LOBBY", round_id)
     if supervisor.lease.session is None:
         framer.reset()
         events[:] = []
@@ -456,12 +479,20 @@ def apply_actions(actions):
 def command(parts, now):
     global catalog, catalog_count, song_length, note_count, next_note
     global chart_ended, screen_state, synced, sync_at, data_at, last_screen
+    global multiplayer, round_id, queue
     kind = parts[0]
     if kind == "EA" and len(parts) == 2:
         if events and int(parts[1]) == events[0][0]:
             events.pop(0)
         return
     if kind == "HB" and len(parts) == 1:
+        return
+    if kind == "DUO" and len(parts) == 1 and not supervisor.host_ready:
+        multiplayer = True
+        apply_actions(supervisor.mark_host_ready(supervisor.lease.session, now))
+        return
+    if kind == "CLOCK" and len(parts) == 2 and multiplayer:
+        wire("RH1", supervisor.lease.session, "C", parts[1], ticks_ms())
         return
     if kind == "CATBEGIN" and len(parts) == 2 and not supervisor.host_ready:
         count = int(parts[1])
@@ -490,6 +521,15 @@ def command(parts, now):
         return
     if supervisor.mode != PC or len(parts) < 2:
         raise ValueError()
+    if multiplayer and kind == "BEGIN" and len(parts) == 4 and screen_state == "MENU":
+        round_id = int(parts[1])
+        queue = []
+        synced = False
+        screen_state = "LOADING"
+        supervisor.set_phase("loading", now)
+    if multiplayer and kind == "CANCEL" and len(parts) == 2 and int(parts[1]) == round_id:
+        return_to_menu(False)
+        return
     if (
         int(parts[1]) != round_id
         or screen_state == "MENU"
@@ -504,7 +544,9 @@ def command(parts, now):
         chart_ended = False
         data_at = now
     elif (
-        kind == "N" and len(parts) == 5 and screen_state in ("LOADING", "ARMED", "PLAY")
+        kind == "N"
+        and len(parts) == 5
+        and screen_state in ("LOADING", "ARMED", "WAIT", "PLAY")
     ):
         index, stamp, direction = int(parts[2]), int(parts[3]), int(parts[4])
         if (
@@ -516,6 +558,10 @@ def command(parts, now):
             or (queue and stamp < queue[-1][0])
         ):
             raise ValueError()
+        if multiplayer and screen_state == "PLAY" and stamp - ticks_diff(now, sync_at) < 210:
+            send_event("STARVED", round_id)
+            return_to_menu(False)
+            return
         queue.append([stamp, direction, 0, None])
         next_note += 1
         data_at = now
@@ -528,6 +574,15 @@ def command(parts, now):
         sync_at = ticks_add(now, 2700)
         synced = True
         send_event("SYNCED", round_id)
+    elif multiplayer and kind == "AT" and len(parts) == 4 and screen_state == "WAIT":
+        sync_at = ticks_add(int(parts[2]), int(parts[3]))
+        if not 1000 <= ticks_diff(sync_at, now) <= 5000:
+            raise ValueError()
+        synced = True
+    elif multiplayer and kind == "GO" and len(parts) == 2 and screen_state == "WAIT" and synced:
+        if ticks_diff(sync_at, now) < 2000:
+            raise ValueError()
+        screen_state = "PLAY"
     elif kind == "ERROR" and len(parts) == 2:
         return_to_menu(True)
     else:
@@ -536,6 +591,7 @@ def command(parts, now):
 
 def receive(line, now):
     global expected_seq, event_seq, sent_event, catalog, catalog_count
+    global multiplayer
     parts = line.split(",")
     if (
         len(parts) == 4
@@ -552,6 +608,7 @@ def receive(line, now):
                 sent_event = -1
                 catalog = []
                 catalog_count = 0
+                multiplayer = False
                 events[:] = []
             wire("RH1", "ACCEPT", session)
         return
@@ -605,6 +662,7 @@ def request_notes(now):
 def play(left, right):
     global screen_state, queue
     pc = supervisor.mode == PC
+    duo = pc and multiplayer
     supervisor.set_phase("playing", ticks_ms())
     lead, perfect, good_window = (1700, 100, 210) if pc else (3000, 220, 400)
     duration = song_length
@@ -631,6 +689,7 @@ def play(left, right):
     last_joy = joy_direction(center_x, center_y)
     hud_dirty = False
     last_led = -1
+    last_report = -200
     left.clear()
     left.line(1, 18, 126, 18)
     left.line(1, 52, 126, 52)
@@ -639,7 +698,7 @@ def play(left, right):
     right.hud_combo = None
     draw_hud(right, 0, 0)
     # Leave time to see the first cue before music begins.
-    if pc:
+    if pc and not duo:
         send_event("START", round_id)
         deadline = ticks_add(ticks_ms(), 8000)
         while not synced:
@@ -648,18 +707,16 @@ def play(left, right):
                 return_to_menu(True)
                 return
             sleep(2)
-        t0 = sync_at
-    else:
-        t0 = ticks_add(ticks_ms(), 3500)
+    t0 = sync_at if pc else ticks_add(ticks_ms(), 3500)
     display.show("3")
     countdown = 3
     while True:
         service()
-        if pc and supervisor.mode != PC:
+        if pc and (supervisor.mode != PC or screen_state != "PLAY"):
             return
         now = ticks_ms()
         d = joy_direction(center_x, center_y)
-        if d != -1 and last_joy == -1:
+        if not duo and d != -1 and last_joy == -1:
             if not paused and d == 3:
                 paused = True
                 paused_at = now
@@ -808,8 +865,16 @@ def play(left, right):
                     )
                 )
                 last_led = led
+            if duo and elapsed - last_report >= 200:
+                wire("RH1", supervisor.lease.session, "T", round_id,
+                     min(elapsed, duration), score, combo, miss)
+                last_report = elapsed
         sleep(1)
     if pc:
+        if duo and (not chart_ended or perf + good + miss != note_count):
+            send_event("STARVED", round_id)
+            return_to_menu(True)
+            return
         send_event("DONE", round_id, score, miss)
     else:
         melody.stop()
@@ -836,13 +901,15 @@ def play(left, right):
     previous = -1
     while True:
         service()
-        if pc and supervisor.mode != PC:
+        if pc and (supervisor.mode != PC or screen_state == "MENU"):
             return
         d = joy_direction(center_x, center_y)
         if d == 3 and previous == -1:
             break
         previous = d
         sleep(25)
+    if duo:
+        send_event("LOBBY", round_id)
     return_to_menu(False)
 
 
@@ -861,13 +928,19 @@ last_action = ticks_ms()
 
 while True:
     service()
+    if screen_state == "PLAY":
+        play(left, right)
+        previous = joy_direction(center_x, center_y)
+        continue
     now = ticks_ms()
     direction = joy_direction(center_x, center_y)
     screen_key = supervisor.mode + screen_state
     if screen_key != last_screen:
         gc.collect()
         if screen_state == "MENU":
-            if supervisor.mode == PC:
+            if supervisor.mode == PC and multiplayer:
+                title, options, footer = "MULTIPLAYER", ("WAIT FOR SONG",), ""
+            elif supervisor.mode == PC:
                 title = "PC SONGS"
                 options = [s[1] for s in catalog]
                 footer = "LS RIGHT SELECT"
@@ -883,11 +956,18 @@ while True:
         elif screen_state == "LOADING":
             menu_draw(right, "PC LOADING", ("WAIT FOR CHART",), 0, "")
         elif screen_state == "ARMED":
-            menu_draw(right, "PC READY", ("LS RIGHT PLAY", "LS LEFT CANCEL"), 0, "")
+            action = "LS RIGHT READY" if multiplayer else "LS RIGHT PLAY"
+            menu_draw(right, "PC READY", (action, "LS LEFT CANCEL"), 0, "")
+        elif screen_state == "WAIT":
+            menu_draw(right, "READY", ("WAIT FOR PLAYER", "LS LEFT CANCEL"), 0, "")
         last_screen = screen_key
     if direction != -1 and previous == -1 and ticks_diff(now, last_action) > 200:
         last_action = now
         if screen_state == "MENU":
+            if supervisor.mode == PC and multiplayer:
+                previous = direction
+                sleep(12)
+                continue
             if direction in (0, 2):
                 count = len(catalog) if supervisor.mode == PC else len(SONGS)
                 menu_index = (menu_index + direction - 1) % count
@@ -909,11 +989,17 @@ while True:
                     direction = joy_direction(center_x, center_y)
         elif screen_state == "ARMED":
             if direction == 1:
-                play(left, right)
-                last_screen = ""
-                direction = joy_direction(center_x, center_y)
+                if multiplayer:
+                    screen_state = "WAIT"
+                    send_event("START", round_id)
+                else:
+                    play(left, right)
+                    last_screen = ""
+                    direction = joy_direction(center_x, center_y)
             elif direction == 3:
                 return_to_menu(True)
+        elif screen_state == "WAIT" and direction == 3:
+            return_to_menu(True)
     if screen_state == "LOADING" and ticks_diff(now, data_at) > 12000:
         return_to_menu(True)
     previous = direction

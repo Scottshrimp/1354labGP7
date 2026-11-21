@@ -1,4 +1,4 @@
-# Rhythm Hold v4.1 · PC Integrated
+# Rhythm Hit v4.1 · PC Integrated
 
 micro:bit V2 + GE1354 GamePad 负责菜单、方向键输入、判定和双 OLED；电脑通过 USB 串口发送曲目和谱面，并在电脑音频设备上播放音乐。每首歌使用一个 `chart.json`。
 

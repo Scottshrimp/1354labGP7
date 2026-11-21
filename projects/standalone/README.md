@@ -1,6 +1,6 @@
-# Rhythm Hold · Standalone Gentle Mode
+# Rhythm Hit · Standalone Gentle Mode
 
-micro:bit V2 + GE1354 GamePad 独立运行版，源自 Rhythm Hold v4.1。设备内嵌单音主旋律与 114 个简单单键提示，刷入后可用电池运行，无需电脑播放音频或发送谱面。
+micro:bit V2 + GE1354 GamePad 独立运行版，源自 PC 整合版 v4.1。设备内嵌单音主旋律与 114 个简单单键提示，刷入后可用电池运行，无需电脑播放音频或发送谱面。
 
 本页命令从仓库根目录运行；本目录的 `docs/` 和 `AGENTS.md` 中使用的短路径以本项目目录为根。
 
