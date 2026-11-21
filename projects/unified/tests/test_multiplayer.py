@@ -180,7 +180,7 @@ class MultiplayerTests(unittest.TestCase):
         self.assertLess(stale.score, 9999)
         self.until(lambda: self.match.phase == "results")
         self.assertEqual([(p.score, p.miss) for p in self.match.players], [(5600, 0), (5600, 0)])
-        # Player 1 drops all telemetry, so its best combo comes from DONE alone.
+        # Both get the correct max combo even though Player 1 loses a telemetry frame.
         self.assertEqual([p.best_combo for p in self.match.players], [56, 56])
         self.assertEqual(sum(name == "stop" for name, _ in self.audio.calls), 1)
 

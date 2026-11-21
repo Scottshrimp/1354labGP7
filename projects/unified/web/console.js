@@ -201,9 +201,11 @@ function renderLead(players, phase, result) {
     }
     lead.dataset.leader = String(winner + 1);
     strong.textContent = "P" + (winner + 1) + " wins";
-    lead.append(strong, Math.abs(a - b) ? "+" + number.format(Math.abs(a - b)) : "");
+    const gap = Math.abs(a - b);
+    lead.append(strong, !result.includes("dnf") && gap ? "+" + number.format(gap) : "");
     return;
   }
+  if (players.some((p) => ["disconnected", "quit", "failed"].includes(p.status))) return;
   if (a === b) {
     strong.textContent = "Level";
     lead.append(strong);
