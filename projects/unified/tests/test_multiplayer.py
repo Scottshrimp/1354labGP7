@@ -180,6 +180,8 @@ class MultiplayerTests(unittest.TestCase):
         self.assertLess(stale.score, 9999)
         self.until(lambda: self.match.phase == "results")
         self.assertEqual([(p.score, p.miss) for p in self.match.players], [(5600, 0), (5600, 0)])
+        # Player 1 drops all telemetry, so its best combo comes from DONE alone.
+        self.assertEqual([p.best_combo for p in self.match.players], [56, 56])
         self.assertEqual(sum(name == "stop" for name, _ in self.audio.calls), 1)
 
         for board in self.boards:
@@ -190,6 +192,41 @@ class MultiplayerTests(unittest.TestCase):
         self.match.confirm(0)
         self.until(lambda: all(player.status == "waiting" for player in self.match.players))
         self.assertEqual(self.match.round_id, 2)
+
+    def test_results_report_best_combo_not_the_final_streak(self):
+        self.game()
+        self.until(self.match.devices_ready)
+        self.match.confirm(0)
+        self.until(lambda: all(player.status == "waiting" for player in self.match.players))
+        for board in self.boards:
+            def button(lane, b=board):
+                elapsed = b.board["ticks_diff"](b.board["ticks_ms"](), b.board["sync_at"])
+                index, within = divmod(elapsed - 1000, 250)
+                return 0 <= index < 56 and index != 40 and within < 35 and lane == index % 4
+
+            board.button = button
+        for board in self.boards:
+            self.ready(board)
+        self.until(lambda: self.match.phase == "results")
+        players = self.match.snapshot(self.now / 1000)["players"]
+        self.assertEqual([p["miss"] for p in players], [1, 1])
+        self.assertEqual([p["best_combo"] for p in players], [40, 40])
+        self.assertTrue(all(p["combo"] < 40 for p in players))
+
+    def test_done_without_best_combo_falls_back_to_telemetry(self):
+        songs = [{"title": "T", "duration": 5000, "notes": [(1000, 0), (2000, 1), (3000, 2)], "wav": Path("x")}]
+        player = PlayerSession(songs, log=lambda _: None)
+        player.begin(1, 0)
+        player.status = "playing"
+        player.update(["T", "1", "2100", "200", "2", "0"], 0)
+        player.update(["T", "1", "3100", "200", "0", "1"], 0)
+        player.event(["DONE", "1", "200", "1"], 0)
+        self.assertEqual((player.status, player.combo, player.best_combo), ("finished", 0, 2))
+        with self.assertRaises(ValueError):
+            fresh = PlayerSession(songs, log=lambda _: None)
+            fresh.begin(1, 0)
+            fresh.status = "playing"
+            fresh.event(["DONE", "1", "300", "0", "4"], 0)
 
     def test_unusable_clock_measurements_cancel_before_play(self):
         self.game(delay=45)

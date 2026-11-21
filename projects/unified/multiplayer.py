@@ -35,7 +35,7 @@ class PlayerSession(HostSession):
         self.connected = True
         self.in_lobby = False
         self.status = "connecting"
-        self.score = self.combo = self.miss = self.elapsed = 0
+        self.score = self.combo = self.best_combo = self.miss = self.elapsed = 0
         self.probes = 0
         self.probe_sent_at = None
         self.sample = None
@@ -56,7 +56,7 @@ class PlayerSession(HostSession):
     def begin(self, round_id, index):
         self.in_lobby = False
         self.status = "loading"
-        self.score = self.combo = self.miss = self.elapsed = 0
+        self.score = self.combo = self.best_combo = self.miss = self.elapsed = 0
         self.probes = 0
         self.probe_sent_at = None
         self.sample = None
@@ -92,11 +92,17 @@ class PlayerSession(HostSession):
             if not 0 <= capacity <= 44 or not 0 <= start <= self.cursor:
                 raise ValueError("Invalid refill")
             self.add_notes(start, capacity)
-        elif kind == "DONE" and len(fields) == 4 and self.status == "playing":
-            score, miss = map(int, fields[2:])
+        elif kind == "DONE" and len(fields) in (4, 5) and self.status == "playing":
+            # Older firmware omits the best combo; telemetry then provides it.
+            score, miss = map(int, fields[2:4])
             count = len(self.song["notes"])
             if not 0 <= miss <= count or not 50 * (count - miss) <= score <= 100 * (count - miss):
                 raise ValueError("Invalid result")
+            if len(fields) == 5:
+                best = int(fields[4])
+                if not 0 <= best <= count - miss:
+                    raise ValueError("Invalid result")
+                self.best_combo = best
             self.score, self.miss = score, miss
             self.elapsed = self.song["duration"]
             self.status = "finished"
@@ -126,6 +132,7 @@ class PlayerSession(HostSession):
                     and self.miss <= miss <= count
                 ):
                     self.elapsed, self.score, self.combo, self.miss = elapsed, score, combo, miss
+                    self.best_combo = max(self.best_combo, combo)
         except ValueError:
             return
 
@@ -277,6 +284,7 @@ class Match:
                 "status": status,
                 "score": player.score if player and self.players else None,
                 "combo": player.combo if player and self.players else None,
+                "best_combo": player.best_combo if player and self.players else None,
                 "miss": player.miss if player and self.players else None,
             })
         duration = self.song["duration"] if self.song else 0

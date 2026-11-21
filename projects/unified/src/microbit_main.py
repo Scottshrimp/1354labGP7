@@ -875,7 +875,7 @@ def play(left, right):
             send_event("STARVED", round_id)
             return_to_menu(True)
             return
-        send_event("DONE", round_id, score, miss)
+        send_event("DONE", round_id, score, miss, best_combo)
     else:
         melody.stop()
         melody = chart = None

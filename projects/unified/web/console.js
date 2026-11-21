@@ -10,7 +10,7 @@ const count = $("count");
 const lead = $("lead");
 
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-const number = new Intl.NumberFormat("zh-TW");
+const number = new Intl.NumberFormat("en-US");
 
 const STEP = {
   boot: -1, waiting_devices: 0, lobby: 0, readying: 1,
@@ -18,41 +18,41 @@ const STEP = {
 };
 
 const STATUS = {
-  disconnected: "未連線",
-  connecting: "連線中",
-  idle: "在大廳",
-  loading: "載入譜面",
-  waiting: "等待 Ready",
-  ready: "已 Ready",
-  playing: "演奏中",
-  finished: "已完賽",
-  failed: "譜面中斷",
-  quit: "已退出",
-  resetting: "返回大廳",
-  dropped: "已掉線",
+  disconnected: "Offline",
+  connecting: "Connecting",
+  idle: "In lobby",
+  loading: "Loading chart",
+  waiting: "Not ready",
+  ready: "Ready",
+  playing: "Playing",
+  finished: "Finished",
+  failed: "Chart lost",
+  quit: "Quit",
+  resetting: "Returning",
+  dropped: "Dropped",
 };
 
 const IDLE = {
-  disconnected: ["請用 USB 連接設備", "插上後會自動配對"],
-  connecting: ["正在握手", "等待設備回應"],
-  idle: ["已在大廳", "等待選曲"],
-  loading: ["載入譜面", "請稍候片刻"],
-  waiting: ["在設備上向右", "確認 Ready"],
-  ready: ["已 Ready", "等待對手"],
-  resetting: ["返回大廳中", "請稍候"],
-  quit: ["已取消", "回到大廳後可重新開始"],
-  failed: ["譜面傳輸中斷", "回到大廳後可重新開始"],
-  dropped: ["設備已掉線", "重新插上後會自動配對"],
+  disconnected: ["Connect over USB", "Pairs automatically when plugged in"],
+  connecting: ["Handshaking", "Waiting for the device"],
+  idle: ["In the lobby", "Waiting for a song"],
+  loading: ["Loading chart", "Just a moment"],
+  waiting: ["Push right on the device", "to ready up"],
+  ready: ["Ready", "Waiting for opponent"],
+  resetting: ["Returning to lobby", "Just a moment"],
+  quit: ["Cancelled", "Back in the lobby soon"],
+  failed: ["Chart transfer lost", "Back in the lobby soon"],
+  dropped: ["Device dropped", "Plug it back in to reconnect"],
 };
 
 const NOTICE = {
-  sync_failed: "上一局同步逾時，已取消。兩台設備回到大廳後可以重新選曲。",
-  start_interrupted: "上一局在開場前被取消。兩台設備回到大廳後可以重新選曲。",
+  sync_failed: "The last round timed out while syncing and was cancelled. Pick a song again once both devices are back in the lobby.",
+  start_interrupted: "The last round was cancelled before it started. Pick a song again once both devices are back in the lobby.",
 };
 
 const ERRORS = {
-  "Both devices must be in the lobby": "兩台設備都需要在大廳中才能開始。",
-  "Unknown song": "找不到這首曲目，請重新選擇。",
+  "Both devices must be in the lobby": "Both devices need to be in the lobby to start.",
+  "Unknown song": "That song is no longer available. Pick another one.",
 };
 
 const time = (ms) => {
@@ -81,6 +81,7 @@ const cards = [1, 2].map((n) => {
     score: pick(".score"),
     outcome: pick(".outcome"),
     combo: pick(".combo"),
+    comboLabel: pick(".combo-label"),
     miss: pick(".miss"),
     acc: pick(".acc"),
     meter: pick(".meter-fill"),
@@ -122,7 +123,7 @@ function outcomes(players) {
   return a > b ? ["win", "lose"] : ["lose", "win"];
 }
 
-const OUTCOME_LABEL = { win: "勝出", tie: "平手", dnf: "未完賽" };
+const OUTCOME_LABEL = { win: "Winner", tie: "Tie", dnf: "DNF" };
 
 function renderPlayers() {
   const players = state ? state.players : [{ status: "disconnected" }, { status: "disconnected" }];
@@ -146,8 +147,8 @@ function renderPlayers() {
 
     if (!showScore) {
       let [title, sub] = IDLE[status] || [STATUS[status] || "", ""];
-      if (status === "idle" && phase === "waiting_devices") sub = "等待另一台設備";
-      if (status === "idle" && phase === "results") sub = "等待對手返回";
+      if (status === "idle" && phase === "waiting_devices") sub = "Waiting for the other device";
+      if (status === "idle" && phase === "results") sub = "Waiting for opponent";
       const key = title + "|" + sub;
       if (key !== card.idleKey) {
         card.idleKey = key;
@@ -160,9 +161,11 @@ function renderPlayers() {
     }
 
     tweenScore(card, player.score);
-    const combo = player.combo ?? 0;
+    const final = phase === "results";
+    const combo = (final ? player.best_combo ?? player.combo : player.combo) ?? 0;
+    card.comboLabel.textContent = final ? "Max combo" : "Combo";
     card.combo.textContent = number.format(combo);
-    if (combo > card.lastCombo && !reduceMotion.matches) {
+    if (!final && combo > card.lastCombo && !reduceMotion.matches) {
       card.combo.classList.remove("bump");
       void card.combo.offsetWidth;
       card.combo.classList.add("bump");
@@ -192,24 +195,24 @@ function renderLead(players, phase, result) {
   if (phase === "results") {
     const winner = result.indexOf("win");
     if (winner === -1) {
-      strong.textContent = result[0] === "tie" ? "平手" : "無人完賽";
+      strong.textContent = result[0] === "tie" ? "Tie" : "No finish";
       lead.append(strong);
       return;
     }
     lead.dataset.leader = String(winner + 1);
-    strong.textContent = "P" + (winner + 1) + " 勝";
+    strong.textContent = "P" + (winner + 1) + " wins";
     lead.append(strong, Math.abs(a - b) ? "+" + number.format(Math.abs(a - b)) : "");
     return;
   }
   if (a === b) {
-    strong.textContent = "同分";
+    strong.textContent = "Level";
     lead.append(strong);
     return;
   }
   const leader = a > b ? 1 : 2;
   lead.dataset.leader = String(leader);
   strong.textContent = "+" + number.format(Math.abs(a - b));
-  lead.append(strong, "P" + leader + " 領先");
+  lead.append(strong, "P" + leader + " leads");
 }
 
 /* ---------- Song picker ---------- */
@@ -242,7 +245,7 @@ function buildTracks(songs) {
       const length = document.createElement("span");
       length.textContent = time(info.duration_ms);
       const notes = document.createElement("span");
-      notes.textContent = number.format(info.notes) + " 音符";
+      notes.textContent = number.format(info.notes) + " notes";
       meta.append(length, notes);
     }
     body.append(no, title, meta);
@@ -266,16 +269,16 @@ function renderPicker() {
   const index = selectedIndex();
   const selection = $("selection");
   if (index === null) {
-    selection.textContent = "尚未選擇曲目";
+    selection.textContent = "No song selected";
   } else {
     const song = state.songs[index];
     const strong = document.createElement("strong");
     strong.textContent = typeof song === "string" ? song : song.title;
-    selection.replaceChildren("已選：", strong);
+    selection.replaceChildren("Selected: ", strong);
   }
   confirmButton.disabled = locked || index === null;
   confirmButton.setAttribute("aria-busy", String(confirming));
-  confirmButton.firstElementChild.textContent = confirming ? "載入中…" : "確認曲目";
+  confirmButton.firstElementChild.textContent = confirming ? "Loading…" : "Confirm song";
 }
 
 /* ---------- Stage ---------- */
@@ -286,32 +289,32 @@ function connectedCount() {
 
 function stageCopy() {
   if (!state) {
-    return ["連線中", "正在連接 host", "請先在終端機執行 multiplayer.py。"];
+    return ["Connecting", "Connecting to host", "Start multiplayer.py in a terminal first."];
   }
   const song = state.song || "";
   switch (state.phase) {
     case "waiting_devices":
       return [
-        "等待設備 · " + connectedCount() + " / 2",
-        "連接兩台 micro:bit",
-        "用 USB 將兩台刷好程式的設備接到這台電腦。兩台都進入聯機菜單後就能選曲。",
+        "Waiting for devices · " + connectedCount() + " / 2",
+        "Connect two micro:bits",
+        "Plug both flashed devices into this computer over USB. Song selection opens once both reach the multiplayer menu.",
       ];
     case "lobby":
-      return ["大廳", "選一首歌", "確認後，兩台設備會各自載入譜面，再由玩家在設備上 Ready。"];
+      return ["Lobby", "Pick a song", "Once confirmed, both devices load the chart and each player readies up on their own device."];
     case "readying":
-      return ["等待 Ready", song, "兩位玩家在各自的 micro:bit 上向右確認。任一方向左即取消本局。"];
+      return ["Waiting for players", song, "Each player pushes right on their micro:bit to ready up. Pushing left on either cancels the round."];
     case "syncing":
-      return ["同步中", song, "兩位玩家都已 Ready，正在對齊兩台設備的時鐘。"];
+      return ["Syncing", song, "Both players are ready. Aligning the two device clocks."];
     case "countdown":
-      return ["即將開始", song, "音樂由這台電腦播放。"];
+      return ["Get ready", song, "Music plays from this computer."];
     case "playing":
-      return ["演奏中", song, ""];
+      return ["Now playing", song, ""];
     case "results": {
       const result = outcomes(state.players);
       const winner = result.indexOf("win");
-      const heading = winner >= 0 ? "玩家 " + (winner + 1) + " 勝出"
-        : result[0] === "tie" ? "平分秋色" : "本局無人完賽";
-      return ["結算 · " + song, heading, "在兩台設備上向左返回大廳，就能開始下一局。"];
+      const heading = winner >= 0 ? "Player " + (winner + 1) + " wins"
+        : result[0] === "tie" ? "It’s a tie" : "Nobody finished";
+      return ["Results · " + song, heading, "Push left on both devices to return to the lobby for the next round."];
     }
     default:
       return ["", "", ""];
@@ -324,7 +327,7 @@ function renderStage() {
   $("heading").textContent = heading;
   $("hint").textContent = hint;
   $("hint").hidden = !hint;
-  document.title = (heading && state ? heading + " · " : "") + "Rhythm Hit 雙人對局";
+  document.title = (heading && state ? heading + " · " : "") + "Rhythm Hit Versus";
 
   const notice = $("notice");
   const message = state && ["lobby", "waiting_devices"].includes(state.phase) ? NOTICE[state.notice] : "";
@@ -346,7 +349,7 @@ function renderTimeline() {
   if (!visible) return;
   const duration = state.duration_ms || 1;
   const pct = Math.min(100, (state.progress_ms / duration) * 100);
-  $("track-title").textContent = "歌曲進度";
+  $("track-title").textContent = "Song progress";
   $("elapsed").textContent = time(state.progress_ms);
   $("duration").textContent = time(state.duration_ms);
   $("bar-fill").style.width = pct.toFixed(2) + "%";
@@ -368,7 +371,7 @@ function renderCountdown() {
 function render() {
   const link = $("connection");
   link.dataset.online = String(online);
-  $("connection-text").textContent = online ? "Host 已連線" : state ? "正在重新連線" : "正在連線";
+  $("connection-text").textContent = online ? "Host connected" : state ? "Reconnecting…" : "Connecting…";
   app.dataset.phase = state ? state.phase : "boot";
   renderStage();
   renderPicker();
@@ -397,11 +400,11 @@ picker.addEventListener("submit", async (event) => {
     if (!response.ok) {
       let detail = "";
       try { detail = await response.json(); } catch { /* non-JSON body */ }
-      throw new Error(ERRORS[detail] || "無法確認曲目。請檢查兩台設備與音訊後再試。");
+      throw new Error(ERRORS[detail] || "Couldn’t confirm the song. Check both devices and the audio, then try again.");
     }
   } catch (error) {
     confirming = false;
-    errorBox.textContent = error instanceof TypeError ? "無法連接 host。" : error.message;
+    errorBox.textContent = error instanceof TypeError ? "Can’t reach the host." : error.message;
     errorBox.hidden = false;
     render();
   }
