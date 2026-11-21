@@ -284,8 +284,12 @@ class Match:
         elapsed = round((latest - self.started_at) * 1000) if self.started_at is not None else 0
         return {
             "phase": phase,
-            "songs": [song["title"] for song in self.songs],
+            "songs": [
+                {"title": song["title"], "duration_ms": song["duration"], "notes": len(song["notes"])}
+                for song in self.songs
+            ],
             "song": self.song["title"] if self.song else None,
+            "note_count": len(self.song["notes"]) if self.song else 0,
             "players": players,
             "duration_ms": duration,
             "progress_ms": max(0, min(duration, elapsed)),
