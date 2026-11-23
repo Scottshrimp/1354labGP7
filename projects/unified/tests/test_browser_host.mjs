@@ -83,8 +83,11 @@ test("browser host runs the real two-board game protocol", { timeout: 25000 }, a
     assert.deepEqual(match.snapshot(now).players.map((player) => [player.score, player.miss, player.best_combo]),
       [[fullScore, 0, song.notes.length], [fullScore, 0, song.notes.length]]);
     assert.equal(match.snapshot(now).progress_ms, song.duration);
-    await move(3, [true, true]);
-    await until(() => match.phase === "lobby");
+    // The console's Back to lobby button returns both boards without joystick input.
+    match.returnToLobby();
+    await until(() => match.phase === "lobby" && match.devicesReady);
+    assert.deepEqual(match.snapshot(now).players.map((player) => player.status), ["idle", "idle"]);
+    assert.throws(() => match.returnToLobby(), /still running/);
     match.begin(0);
     await until(() => boards.every((board) => board.status === "waiting"));
     await move(1, [true, true]);

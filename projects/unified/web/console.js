@@ -12,6 +12,7 @@ const browserSetup = $("web-setup");
 // Web Serial exists only in desktop Chromium browsers (Chrome, Edge, …) on HTTPS.
 const serialUnsupported = Boolean(browserSetup) && !(window.isSecureContext && "serial" in navigator);
 let browserHost;
+let returning = false;
 
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const number = new Intl.NumberFormat("en-US");
@@ -332,7 +333,7 @@ function stageCopy() {
       const winner = result.indexOf("win");
       const heading = winner >= 0 ? "Player " + (winner + 1) + " wins"
         : result[0] === "tie" ? "It’s a tie" : "Nobody finished";
-      return ["Results · " + song, heading, "Push left on both devices to return to the lobby for the next round."];
+      return ["Results · " + song, heading, "Head back to the lobby for the next round, or push left on both devices."];
     }
     default:
       return ["", "", ""];
@@ -346,6 +347,11 @@ function renderStage() {
   $("hint").textContent = hint;
   $("hint").hidden = !hint;
   document.title = (heading && state ? heading + " · " : "") + "Rhythm Hit Versus";
+
+  const back = $("back-lobby");
+  back.hidden = state?.phase !== "results";
+  back.disabled = returning;
+  back.setAttribute("aria-busy", String(returning));
 
   const notice = $("notice");
   const message = state && ["lobby", "waiting_devices"].includes(state.phase) ? NOTICE[state.notice] : "";
@@ -430,6 +436,29 @@ picker.addEventListener("submit", async (event) => {
     confirming = false;
     errorBox.textContent = error instanceof TypeError ? "Can’t reach the host." : error.message;
     errorBox.hidden = false;
+    render();
+  }
+});
+
+$("back-lobby").addEventListener("click", async () => {
+  if (returning || state?.phase !== "results") return;
+  returning = true;
+  render();
+  try {
+    if (browserHost) {
+      browserHost.returnToLobby();
+    } else {
+      const response = await fetch("/lobby", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "null",
+      });
+      if (!response.ok) throw new Error();
+    }
+  } catch {
+    // The next snapshot still shows results; the button stays available to retry.
+  } finally {
+    returning = false;
     render();
   }
 });

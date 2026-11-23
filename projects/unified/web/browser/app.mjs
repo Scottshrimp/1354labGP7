@@ -232,6 +232,10 @@ export async function startBrowserHost(onSnapshot) {
   display(now());
 
   return {
+    returnToLobby() {
+      match.returnToLobby();
+      display(now());
+    },
     async confirm(index) {
       const song = match.checkSelection(index);
       await audio.prepare(song);

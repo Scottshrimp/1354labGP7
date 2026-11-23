@@ -781,3 +781,8 @@ kbd {
 }
 
 @keyframes peek { from { transform: translateX(100%); } }
+
+/* ---------- Results: back to lobby ---------- */
+
+.back-lobby { margin-top: 22px; }
+.back-lobby:not(:disabled):hover svg { transform: translateX(-2px); }

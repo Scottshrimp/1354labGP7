@@ -41,6 +41,13 @@ export class BrowserMatch {
     this.song = this.startAt = null;
   }
 
+  // Leave the results screen for every board without waiting for joysticks.
+  returnToLobby() {
+    if (this.phase !== "results") throw new Error("The round is still running.");
+    for (const player of this.players) if (!player.inLobby) player.cancel();
+    this.resetLobby();
+  }
+
   abort(reason) {
     this.audio.stop();
     for (const player of this.players) player.cancel();

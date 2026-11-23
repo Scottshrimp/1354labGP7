@@ -213,6 +213,15 @@ class Match:
         self.song = None
         self.started_at = None
 
+    def return_to_lobby(self):
+        """Leave the results screen for every board without waiting for joysticks."""
+        if self.phase != "results":
+            raise ValueError("The round is still running")
+        for player in self.players:
+            if not player.in_lobby:
+                player.cancel()
+        self.reset_lobby()
+
     def abort(self, notice):
         self.audio.stop()
         for player in self.players:
@@ -352,7 +361,7 @@ def web_server(match, lock, port, stopping):
                 return
 
         def do_POST(self):
-            if self.path != "/confirm":
+            if self.path not in ("/confirm", "/lobby"):
                 self.send_error(404)
                 return
             if self.headers.get_content_type() != "application/json":
@@ -363,9 +372,12 @@ def web_server(match, lock, port, stopping):
                 if not 0 < size <= 128:
                     raise ValueError("Invalid request body")
                 self.connection.settimeout(2)
-                index = json.loads(self.rfile.read(size))
+                body = json.loads(self.rfile.read(size))
                 with lock:
-                    match.confirm(index)
+                    if self.path == "/lobby":
+                        match.return_to_lobby()
+                    else:
+                        match.confirm(body)
             except (TimeoutError, ValueError) as error:
                 self.respond(409, "application/json", json.dumps(str(error)).encode())
                 return

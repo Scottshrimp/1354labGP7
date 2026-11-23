@@ -213,6 +213,49 @@ class MultiplayerTests(unittest.TestCase):
         self.assertEqual([p["best_combo"] for p in players], [40, 40])
         self.assertTrue(all(p["combo"] < 40 for p in players))
 
+    def test_console_returns_both_boards_from_results_to_lobby(self):
+        self.game()
+        self.until(self.match.devices_ready)
+        with self.assertRaises(ValueError):
+            self.match.return_to_lobby()
+        self.match.confirm(0)
+        self.until(lambda: all(player.status == "waiting" for player in self.match.players))
+        self.hit_chart(56)
+        for board in self.boards:
+            self.ready(board)
+        self.until(lambda: self.match.phase == "results")
+        self.assertTrue(all(board.board["screen_state"] != "MENU" for board in self.boards))
+
+        # No joystick input: the console alone brings both boards back.
+        self.match.return_to_lobby()
+        self.until(self.match.devices_ready)
+        self.assertEqual(self.match.phase, "lobby")
+        self.assertTrue(all(board.board["screen_state"] == "MENU" for board in self.boards))
+        self.assertEqual(
+            [p["status"] for p in self.match.snapshot(self.now / 1000)["players"]], ["idle", "idle"]
+        )
+        self.match.confirm(0)
+        self.until(lambda: all(player.status == "waiting" for player in self.match.players))
+        self.assertEqual(self.match.round_id, 2)
+
+    def test_console_return_after_one_board_already_left_results(self):
+        self.game()
+        self.until(self.match.devices_ready)
+        self.match.confirm(0)
+        self.until(lambda: all(player.status == "waiting" for player in self.match.players))
+        self.hit_chart(56)
+        for board in self.boards:
+            self.ready(board)
+        self.until(lambda: self.match.phase == "results")
+        self.boards[0].joy = lambda: 3
+        self.until(lambda: self.match.players[0].in_lobby)
+        self.boards[0].joy = lambda: -1
+        self.match.return_to_lobby()
+        self.until(self.match.devices_ready)
+        self.assertTrue(all(board.board["screen_state"] == "MENU" for board in self.boards))
+        self.match.confirm(0)
+        self.until(lambda: all(player.status == "waiting" for player in self.match.players))
+
     def test_done_without_best_combo_falls_back_to_telemetry(self):
         songs = [{"title": "T", "duration": 5000, "notes": [(1000, 0), (2000, 1), (3000, 2)], "wav": Path("x")}]
         player = PlayerSession(songs, log=lambda _: None)
