@@ -97,7 +97,13 @@ python3 -m http.server 8875 --bind 127.0.0.1 --directory projects/unified/dist
 
 两块板进入联机大堂后，选择 **STARTER BEAT** 并确认。两位玩家各自在设备上向右 Ready。打完后都向左返回，再试一局。网页版的 **STARTER BEAT** 和下载固件里的单机演示旋律均由构建脚本生成，Python host 的完整本地曲库仍可用原入口游玩。
 
-发布时，把 `projects/unified/dist/` 里的文件作为同一个静态站部署，绑定域名并启用 HTTPS。服务器只需提供静态文件，包括以 JavaScript MIME 类型提供 `.mjs` 文件。访客的对局和串口通信由网页所在的浏览器处理。先验证 macOS 与 Windows 上的首次授权、刷新自动连接、连续两局、曲首与曲末的音画同步，以及对局中拔掉一块板后的结算。
+线上站点为 `https://rhythmhit.scottshrimp.com`，托管在 VPS3 的 Caddy 上（站点块见仓库根目录 `deploy/Caddyfile.rhythmhit`）。发布流程与主站一致：本地开发并 push，再在服务器拉取指定 commit 构建：
+
+```sh
+ssh root@45.32.60.198 rhythmhit-deploy <完整 commit>
+```
+
+`deploy/rhythmhit-deploy.sh` 以 `nobody` 身份运行 `build_web.py`，产物装入 `/srv/rhythmhit/releases/<commit>` 并原子切换 `current`；HTTPS 检查失败时自动回到上一版，保留最近 5 个版本。教程页源文件为 `web/tutorial/index.html`。访客的对局和串口通信由网页所在的浏览器处理。先验证 macOS 与 Windows 上的首次授权、刷新自动连接、连续两局、曲首与曲末的音画同步，以及对局中拔掉一块板后的结算。
 
 浏览器协议回归可以用 Node.js 运行，测试会让 JavaScript host 与两个固件模拟实例完成对局。
 

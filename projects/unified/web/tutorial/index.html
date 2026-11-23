@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script>
+    if (location.protocol === "http:" && !/^(localhost|127(\.\d+){3}|\[::1\])$|\.localhost$/.test(location.hostname)) {
+      location.replace("https://" + location.host + location.pathname + location.search + location.hash);
+    }
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="only light">
+  <title>Rhythm Hit Tutorial</title>
+  <meta name="description" content="Flash a micro:bit V2 and play Rhythm Hit Versus in the browser.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2314161c'/%3E%3Cpath d='M16 5l4 4h-8zM27 16l-4 4v-8zM16 27l-4-4h8zM5 16l4-4v8z' fill='%23ff6b57'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%233fc8e0'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .guide { max-width: 46rem; }
+    .guide h2 { font-size: 20px; letter-spacing: -.01em; margin: 40px 0 12px; }
+    .guide p, .guide li { color: var(--text); }
+    .guide .muted { color: var(--muted); }
+    .needs { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 10px; padding: 0; margin: 0; list-style: none; }
+    .needs li { padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .needs strong { display: block; }
+    .needs span { color: var(--muted); font-size: 14px; }
+    .howto { counter-reset: step; list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+    .howto > li { counter-increment: step; position: relative; padding: 16px 18px 16px 58px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+    .howto > li::before { content: counter(step, decimal-leading-zero); position: absolute; left: 18px; top: 16px; font-size: 13px; font-variant-numeric: tabular-nums; color: var(--muted); font-weight: 650; }
+    .howto p { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+    .howto strong { font-weight: 650; }
+    .guide a { color: var(--p2); }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 24px 0 0; }
+    .actions a { display: inline-flex; align-items: center; padding: 10px 16px; border-radius: 999px; font-weight: 600; font-size: 15px; text-decoration: none; border: 1px solid var(--line-strong); color: var(--text); background: var(--surface); }
+    .actions a.primary { background: var(--button); color: var(--button-text); border-color: var(--button); }
+    .controls { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-size: 15px; }
+    .controls th, .controls td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    .controls tr:last-child td { border-bottom: 0; }
+    .controls th { color: var(--muted); font-weight: 600; font-size: 13px; background: var(--surface-2); }
+    .fixes dt { font-weight: 650; margin-top: 16px; }
+    .fixes dd { margin: 4px 0 0; color: var(--muted); }
+    kbd { font-family: inherit; font-size: 13px; padding: 1px 6px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface-2); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <a class="brand" href="/" aria-label="Rhythm Hit Versus">
+        <span class="brand-name">Rhythm Hit</span>
+        <span class="brand-sub">Tutorial</span>
+      </a>
+    </header>
+
+    <main class="guide">
+      <section class="stage">
+        <p class="eyebrow">Getting started</p>
+        <h1>Flash your micro:bit and play</h1>
+        <p class="hint">Rhythm Hit Versus runs entirely in your browser. Flash one file onto each micro:bit, plug both boards into the same computer, and the page hosts the match.</p>
+        <div class="actions">
+          <a class="primary" href="/main.py" download>Download main.py</a>
+          <a href="/">Open the console</a>
+        </div>
+      </section>
+
+      <h2>What you need</h2>
+      <ul class="needs">
+        <li><strong>2 × micro:bit V2</strong><span>Each fitted to a GE1354 GamePad</span></li>
+        <li><strong>2 × USB data cables</strong><span>Charge-only cables won’t show up</span></li>
+        <li><strong>Desktop Chrome or Edge</strong><span>Web Serial isn’t available in Safari, Firefox or on phones</span></li>
+      </ul>
+
+      <h2>1 · Flash each board</h2>
+      <ol class="howto">
+        <li><strong>Download <a href="/main.py" download>main.py</a></strong><p>Use the file from this site. It is built to match this page; older Rhythm Hit files won’t pair.</p></li>
+        <li><strong>Open the <a href="https://python.microbit.org/" target="_blank" rel="noopener">micro:bit Python Editor</a></strong><p>Centre the joystick and connect the first micro:bit over USB.</p></li>
+        <li><strong>Open main.py in the editor</strong><p>Use <em>Open…</em> and choose the downloaded file, replacing the current project. Don’t add any other files.</p></li>
+        <li><strong>Send to micro:bit</strong><p>Pick the board when Chrome asks. When flashing finishes, the OLED shows the standalone menu.</p></li>
+        <li><strong>Repeat for the second board, then close the editor tab</strong><p>The editor keeps the serial port open. Close it so this site can talk to the boards.</p></li>
+      </ol>
+
+      <h2>2 · Connect and play</h2>
+      <ol class="howto">
+        <li><strong>Plug both boards into this computer</strong><p>Keep the joysticks centred while they start up.</p></li>
+        <li><strong>Open the <a href="/">console</a> and connect each player</strong><p>Click <em>Connect player 1</em>, choose a micro:bit, then do the same for player 2. Chrome remembers the boards, so later visits reconnect automatically.</p></li>
+        <li><strong>Pick a song and confirm</strong><p>Once both boards reach the multiplayer lobby, song selection opens. Turn your speakers on — the music plays from the computer.</p></li>
+        <li><strong>Ready up on the devices</strong><p>Each player pushes <kbd>→</kbd> on their own micro:bit. When both are ready the boards sync clocks and count down together.</p></li>
+        <li><strong>Hit the notes</strong><p>Push the joystick in the direction shown as each note reaches the line. Results appear on the page when the song ends; push <kbd>←</kbd> on both devices to return to the lobby.</p></li>
+      </ol>
+
+      <h2>Controls</h2>
+      <table class="controls">
+        <thead><tr><th scope="col">Where</th><th scope="col">Action</th></tr></thead>
+        <tbody>
+          <tr><td>Lobby, after a song is confirmed</td><td><kbd>→</kbd> ready · <kbd>←</kbd> cancel the round</td></tr>
+          <tr><td>During a song</td><td>Joystick or buttons in the note’s direction. There is no pause in versus mode.</td></tr>
+          <tr><td>Results</td><td><kbd>←</kbd> back to the lobby</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Troubleshooting</h2>
+      <dl class="fixes">
+        <dt>The Connect buttons are greyed out</dt>
+        <dd>Use desktop Chrome or Edge and open the site over https.</dd>
+        <dt>“No game handshake”</dt>
+        <dd>The board is running other code. Flash the main.py from this site again, and make sure the Python Editor tab is closed.</dd>
+        <dt>“Can’t open the serial port”</dt>
+        <dd>Another tab or program is using the board. Close the Python Editor, other Rhythm Hit tabs and any local Python host, then reconnect.</dd>
+        <dt>The board doesn’t appear in Chrome’s list</dt>
+        <dd>Try another USB cable or port; some cables only carry power.</dd>
+        <dt>A board unplugs mid-song</dt>
+        <dd>The other player keeps going and the unplugged player is marked as not finished. Plug it back in and it rejoins on its seat.</dd>
+      </dl>
+      <p class="muted" style="margin-top:40px">Built for micro:bit V2 and the GE1354 GamePad.</p>
+    </main>
+  </div>
+</body>
+</html>

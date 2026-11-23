@@ -1,0 +1,16 @@
+# Site block for /etc/caddy/Caddyfile on VPS3. Static files only; the
+# release command switches /srv/rhythmhit/current between immutable builds.
+rhythmhit.scottshrimp.com {
+	encode zstd gzip
+	root * /srv/rhythmhit/current
+	file_server
+	header {
+		-Server
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		# Small site: always revalidate so a new release (and its main.py)
+		# reaches visitors immediately.
+		Cache-Control "no-cache"
+	}
+}

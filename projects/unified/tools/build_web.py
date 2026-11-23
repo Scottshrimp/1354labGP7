@@ -50,6 +50,8 @@ def build():
     )
     for filename in ("style.css", "console.js"):
         shutil.copyfile(WEB / filename, DIST / filename)
+    (DIST / "tutorial").mkdir(exist_ok=True)
+    shutil.copyfile(WEB / "tutorial/index.html", DIST / "tutorial/index.html")
     for filename in ("app.mjs", "rh1.mjs", "match.mjs"):
         shutil.copyfile(WEB / "browser" / filename, browser / filename)
 
