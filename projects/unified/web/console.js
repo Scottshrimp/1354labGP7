@@ -9,6 +9,8 @@ const countdown = $("countdown");
 const count = $("count");
 const lead = $("lead");
 const browserSetup = $("web-setup");
+// Web Serial exists only in desktop Chromium browsers (Chrome, Edge, …) on HTTPS.
+const serialUnsupported = Boolean(browserSetup) && !(window.isSecureContext && "serial" in navigator);
 let browserHost;
 
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -150,7 +152,9 @@ function renderPlayers() {
 
     if (!showScore) {
       let [title, sub] = IDLE[status] || [STATUS[status] || "", ""];
-      if (browserSetup && status === "disconnected") sub = "Choose this board above on your first visit";
+      if (browserSetup && status === "disconnected") {
+        sub = serialUnsupported ? "Needs desktop Chrome or Edge" : "Choose this board above on your first visit";
+      }
       if (status === "idle" && phase === "waiting_devices") sub = "Waiting for the other device";
       if (status === "idle" && phase === "results") sub = "Waiting for opponent";
       const key = title + "|" + sub;
@@ -294,6 +298,13 @@ function connectedCount() {
 }
 
 function stageCopy() {
+  if (serialUnsupported) {
+    return [
+      "Browser not supported",
+      "Open this page in Chrome or Edge",
+      "This browser can’t talk to a micro:bit over USB. Safari, Firefox and phone browsers don’t support Web Serial, so open rhythmhit.scottshrimp.com in desktop Chrome or Edge to connect your boards. You can still download the firmware and read the tutorial here.",
+    ];
+  }
   if (!state) {
     if (browserSetup) return ["Setup", "Connect two micro:bits", "Plug in both boards and connect each player below."];
     return ["Connecting", "Connecting to host", "Start multiplayer.py in a terminal first."];
@@ -377,9 +388,9 @@ function renderCountdown() {
 
 function render() {
   const link = $("connection");
-  link.dataset.online = String(online);
+  link.dataset.online = serialUnsupported ? "unsupported" : String(online);
   $("connection-text").textContent = browserSetup
-    ? (online ? "Web Serial ready" : "Browser setup")
+    ? (serialUnsupported ? "Use Chrome or Edge" : online ? "Web Serial ready" : "Browser setup")
     : (online ? "Host connected" : state ? "Reconnecting…" : "Connecting…");
   app.dataset.phase = state ? state.phase : "boot";
   renderStage();
@@ -457,6 +468,8 @@ function setupFirmwareCard() {
 
 if (browserSetup) {
   setupFirmwareCard();
+  // Connect buttons could never work here; the stage explains what to do instead.
+  if (serialUnsupported) browserSetup.querySelector(".pair-buttons").hidden = true;
   import("./browser/app.mjs")
     .then(({ startBrowserHost }) => startBrowserHost(displaySnapshot))
     .then((host) => { browserHost = host; })

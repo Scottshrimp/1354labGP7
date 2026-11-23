@@ -106,6 +106,8 @@ body {
 }
 .link[data-online="true"] .dot { background: var(--good); box-shadow: 0 0 0 3px color-mix(in srgb, var(--good) 22%, transparent); }
 .link[data-online="false"] .dot { background: var(--warn); animation: pulse 1.4s ease-in-out infinite; }
+.link[data-online="unsupported"] { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 30%, var(--line)); }
+.link[data-online="unsupported"] .dot { background: var(--bad); }
 
 /* ---------- Flow steps ---------- */
 
