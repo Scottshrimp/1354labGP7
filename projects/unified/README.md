@@ -95,7 +95,7 @@ python3 -m http.server 8875 --bind 127.0.0.1 --directory projects/unified/dist
 
 在桌面 Chrome 或 Edge 打开 [http://127.0.0.1:8875/](http://127.0.0.1:8875/)。两台 micro:bit V2 都用 Python Editor 刷入网页提供的 `main.py`，刷后关闭编辑器串口，再用 USB 数据线把两块板接到同一台电脑。首次分别点击 **Connect player 1** 和 **Connect player 2** 授权。网页会自动尝试连接浏览器已授权且能明确分配的设备。端口被占用时，关闭本地 Python host 和其他正在连接的标签页。
 
-两块板进入联机大堂后，选择 **STARTER BEAT** 并确认。两位玩家各自在设备上向右 Ready。打完后都向左返回，再试一局。网页版的 **STARTER BEAT** 和下载固件里的单机演示旋律均由构建脚本生成，Python host 的完整本地曲库仍可用原入口游玩。
+两块板进入联机大堂后，在网页选歌并确认。两位玩家各自在设备上向右 Ready。打完后都向左返回，再试一局。网页提供下载的 `main.py` 直接复制自已提交的 `deploy/main.py`，与本地刷入文件逐字节相同，单机菜单保留 MEGALOVANIA 和 MARIO GROUND THEME。网页曲库的 **STARTER BEAT** 由构建脚本生成，其余歌曲见下文。
 
 线上站点为 `https://rhythmhit.scottshrimp.com`，托管在 VPS3 的 Caddy 上（站点块见仓库根目录 `deploy/Caddyfile.rhythmhit`）。发布流程与主站一致：本地开发并 push，再在服务器拉取指定 commit 构建：
 

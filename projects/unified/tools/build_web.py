@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the static Web Serial console and its matching public demo firmware."""
+"""Build the static Web Serial console and the downloadable unified firmware."""
 
 from array import array
 import hashlib
@@ -9,7 +9,7 @@ import shutil
 import sys
 import wave
 
-from build import ROOT, assembled_source, compile_deployment, pack_song_assets, standalone_builder
+from build import ROOT
 
 WEB = ROOT / "web"
 DIST = ROOT / "dist"
@@ -117,14 +117,11 @@ def build():
     catalog = [{"title": TITLE, "duration": DURATION, "notes": notes, "audio": "starter-beat.wav"}, *library()]
     (browser / "songs.json").write_text(json.dumps(catalog, separators=(",", ":")) + "\n", encoding="utf-8")
 
-    song = {
-        "title": TITLE,
-        "duration_ms": DURATION,
-        "melody": [(stamp, 290, pitch) for stamp, pitch in BEATS],
-        "notes": [{"time_ms": stamp, "direction": DIRECTIONS[lane]} for stamp, lane in notes[::2]],
-    }
-    assets = pack_song_assets([song], standalone_builder())
-    firmware = compile_deployment(assembled_source(assets))
+    # Offer the committed unified firmware itself, so the board's standalone
+    # menu keeps its full library (MEGALOVANIA, MARIO GROUND THEME) and the
+    # download is byte-identical to the hardware-tested deploy/main.py.
+    # CI rebuilds that file with Python 3.13 and fails if it is stale.
+    firmware = (ROOT / "deploy/main.py").read_text(encoding="utf-8")
     (DIST / "main.py").write_text(firmware, encoding="utf-8")
     print(f"Static site: {DIST} ({len(catalog)} songs: {', '.join(song['title'] for song in catalog)})")
     print(f"Flash in Python Editor: {DIST / 'main.py'} ({len(firmware.encode())} bytes)")
