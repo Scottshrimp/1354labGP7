@@ -37,11 +37,11 @@
     .controls th { color: var(--muted); font-weight: 600; font-size: 13px; background: var(--surface-2); }
     .fixes dt { font-weight: 650; margin-top: 16px; }
     .fixes dd { margin: 4px 0 0; color: var(--muted); }
-    .top-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
-    .back-link { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px 6px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--text); font-size: 14px; font-weight: 600; text-decoration: none; white-space: nowrap; transition: border-color .15s; }
-    .back-link:hover { border-color: var(--line-strong); }
-    .back-link svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform .15s; }
-    .back-link:hover svg { transform: translateX(-2px); }
+    .back-row { padding-top: 16px; }
+    .back-row + .top { padding-top: 4px; }
+    .back-arrow { display: inline-grid; place-items: center; width: 36px; height: 36px; margin-left: -8px; border-radius: 10px; color: var(--muted); transition: background-color .15s, color .15s; }
+    .back-arrow:hover { background: var(--surface-2); color: var(--text); }
+    .back-arrow svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
     .callout { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: start; margin: 14px 0 0; padding: 16px 18px; border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--line)); border-left: 4px solid var(--warn); border-radius: var(--radius); background: color-mix(in srgb, var(--warn) 9%, var(--surface)); }
     .callout-icon { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--warn); color: #fff; font-weight: 800; font-size: 15px; line-height: 1; }
     .callout strong { display: block; font-size: 16px; letter-spacing: -.005em; }
@@ -52,17 +52,16 @@
 </head>
 <body>
   <div class="app">
+    <nav class="back-row">
+      <a class="back-arrow" href="/" aria-label="Back to console" title="Back to console">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 10H4.5M9.5 5 4.5 10l5 5"/></svg>
+      </a>
+    </nav>
     <header class="top">
-      <div class="top-left">
-        <a class="back-link" href="/">
-          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8H3.5M7.5 4 3.5 8l4 4"/></svg>
-          <span>Back to console</span>
-        </a>
-        <a class="brand" href="/" aria-label="Rhythm Hit Versus">
-          <span class="brand-name">Rhythm Hit</span>
-          <span class="brand-sub">Tutorial</span>
-        </a>
-      </div>
+      <a class="brand" href="/" aria-label="Rhythm Hit Versus">
+        <span class="brand-name">Rhythm Hit</span>
+        <span class="brand-sub">Tutorial</span>
+      </a>
     </header>
 
     <main class="guide">
