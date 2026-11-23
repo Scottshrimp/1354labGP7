@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="only light">
+  <title>Leaderboard · Rhythm Hit</title>
+  <meta name="description" content="Best solo scores for every Rhythm Hit song.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2314161c'/%3E%3Cpath d='M16 5l4 4h-8zM27 16l-4 4v-8zM16 27l-4-4h8zM5 16l4-4v8z' fill='%23ff6b57'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%233fc8e0'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="app board-page">
+    <header class="top">
+      <div class="brand">
+        <a class="brand-name" href="/">Rhythm Hit</a>
+        <span class="brand-sub">Leaderboard</span>
+      </div>
+      <nav class="account" id="account" aria-label="Account" hidden></nav>
+    </header>
+
+    <section class="stage" aria-labelledby="heading">
+      <p class="eyebrow" id="eyebrow">Leaderboard</p>
+      <h1 id="heading">Loading…</h1>
+      <p class="hint" id="hint">Best solo score per player. Play solo while logged in on the console to get on the board.</p>
+    </section>
+
+    <section class="board-gate" id="gate" hidden>
+      <p>The leaderboard is for players with an account. Sign up to save your solo runs and see where you rank.</p>
+      <div class="board-gate-actions">
+        <button type="button" id="gate-signup">Sign up</button>
+        <button type="button" class="secondary" id="gate-login">Log in</button>
+      </div>
+    </section>
+
+    <p class="error" id="board-error" role="alert" hidden></p>
+
+    <div id="board" hidden>
+      <div class="song-tabs" id="songs" role="tablist" aria-label="Songs"></div>
+
+      <section class="board-me" id="me" aria-label="Your best" hidden>
+        <div><span class="board-me-label">Your rank</span><strong id="me-rank"></strong></div>
+        <div><span class="board-me-label">Best score</span><strong id="me-score"></strong></div>
+        <div><span class="board-me-label">Accuracy</span><strong id="me-acc"></strong></div>
+        <div><span class="board-me-label">Max combo</span><strong id="me-combo"></strong></div>
+      </section>
+
+      <section class="board-table" aria-labelledby="table-title">
+        <h2 id="table-title">Top players</h2>
+        <table>
+          <thead>
+            <tr><th scope="col">#</th><th scope="col">Player</th><th scope="col" class="num">Score</th>
+              <th scope="col" class="num">Accuracy</th><th scope="col" class="num wide">Max combo</th>
+              <th scope="col" class="num wide">Miss</th><th scope="col" class="num wide">Date</th></tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <p class="board-empty" id="empty" hidden>No runs yet. Be the first on this song.</p>
+      </section>
+
+      <section class="board-table" aria-labelledby="recent-title">
+        <h2 id="recent-title">Your recent runs</h2>
+        <table>
+          <thead>
+            <tr><th scope="col">Song</th><th scope="col" class="num">Score</th><th scope="col" class="num">Accuracy</th>
+              <th scope="col" class="num wide">Miss</th><th scope="col" class="num">Date</th></tr>
+          </thead>
+          <tbody id="recent"></tbody>
+        </table>
+        <p class="board-empty" id="recent-empty" hidden>Your finished solo runs show up here.</p>
+      </section>
+    </div>
+  </div>
+
+  <script type="module">
+    import { api, loadAccount, mountAccountNav, onUserChange, openAuth } from "/account.mjs";
+
+    const $ = (id) => document.getElementById(id);
+    const number = new Intl.NumberFormat("en-US");
+    const day = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" });
+    const fullDate = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
+    let song = new URLSearchParams(location.search).get("song") || "";
+    let loading = 0;
+
+    function cell(text, className) {
+      const td = document.createElement("td");
+      if (className) td.className = className;
+      td.textContent = text;
+      return td;
+    }
+
+    function dateCell(seconds, className) {
+      const td = cell("", className);
+      const time = document.createElement("time");
+      const date = new Date(seconds * 1000);
+      time.dateTime = date.toISOString();
+      time.title = fullDate.format(date);
+      time.textContent = day.format(date);
+      td.append(time);
+      return td;
+    }
+
+    const percent = (value) => value === null ? "—" : value.toFixed(1) + "%";
+
+    function render(data) {
+      song = data.song.id;
+      history.replaceState(null, "", "?song=" + encodeURIComponent(song));
+      $("heading").textContent = data.song.title;
+      $("eyebrow").textContent = "Leaderboard · " + number.format(data.song.notes) + " notes";
+      document.title = data.song.title + " · Leaderboard · Rhythm Hit";
+
+      $("songs").replaceChildren(...data.songs.map((item) => {
+        const tab = document.createElement("button");
+        tab.type = "button";
+        tab.role = "tab";
+        tab.textContent = item.title;
+        tab.setAttribute("aria-selected", String(item.id === song));
+        tab.addEventListener("click", () => { if (item.id !== song) void load(item.id); });
+        return tab;
+      }));
+
+      $("me").hidden = !data.me;
+      if (data.me) {
+        $("me-rank").textContent = "#" + data.me.rank;
+        $("me-score").textContent = number.format(data.me.score);
+        $("me-acc").textContent = percent(data.me.accuracy);
+        $("me-combo").textContent = number.format(data.me.best_combo);
+      }
+
+      $("rows").replaceChildren(...data.entries.map((entry) => {
+        const row = document.createElement("tr");
+        if (entry.you) row.className = "you";
+        row.dataset.rank = String(entry.rank);
+        const name = cell(entry.name, "player-name");
+        if (entry.you) {
+          const tag = document.createElement("span");
+          tag.className = "you-tag";
+          tag.textContent = "You";
+          name.append(tag);
+        }
+        row.append(cell(String(entry.rank), "rank"), name, cell(number.format(entry.score), "num strong"),
+          cell(percent(entry.accuracy), "num"), cell(number.format(entry.best_combo), "num wide"),
+          cell(number.format(entry.miss), "num wide"), dateCell(entry.at, "num wide"));
+        return row;
+      }));
+      $("empty").hidden = data.entries.length > 0;
+
+      $("recent").replaceChildren(...data.recent.map((entry) => {
+        const row = document.createElement("tr");
+        row.append(cell(entry.title, "player-name"), cell(number.format(entry.score), "num strong"),
+          cell(percent(entry.accuracy), "num"), cell(number.format(entry.miss), "num wide"), dateCell(entry.at, "num"));
+        return row;
+      }));
+      $("recent-empty").hidden = data.recent.length > 0;
+    }
+
+    async function load(id = song) {
+      const ticket = ++loading;
+      $("board-error").hidden = true;
+      try {
+        const data = await api("leaderboard" + (id ? "?song=" + encodeURIComponent(id) : ""));
+        if (ticket !== loading) return;
+        $("board").hidden = false;
+        render(data);
+      } catch (error) {
+        if (ticket !== loading) return;
+        if (error.status === 404 && id) return load("");
+        $("board-error").textContent = error.status === 401 ? "Log in to see the leaderboard."
+          : "The leaderboard couldn’t be loaded. Reload the page to try again.";
+        $("board-error").hidden = false;
+      }
+    }
+
+    function showGate(signedIn) {
+      $("gate").hidden = signedIn;
+      if (!signedIn) {
+        $("board").hidden = true;
+        $("heading").textContent = "See where you rank";
+        $("eyebrow").textContent = "Leaderboard";
+      }
+    }
+
+    $("gate-signup").addEventListener("click", () => openAuth("signup"));
+    $("gate-login").addEventListener("click", () => openAuth("login"));
+    mountAccountNav($("account"), { leaderboard: false });
+    loadAccount().then(() => {
+      onUserChange((user) => {
+        showGate(Boolean(user));
+        if (user) void load();
+      });
+    }).catch(() => {
+      $("heading").textContent = "Leaderboard unavailable";
+      $("board-error").textContent = "Couldn’t reach the server. Reload the page to try again.";
+      $("board-error").hidden = false;
+    });
+  </script>
+</body>
+</html>

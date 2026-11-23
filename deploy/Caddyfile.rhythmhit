@@ -10,6 +10,13 @@ rhythmhit.scottshrimp.com {
 		Referrer-Policy strict-origin-when-cross-origin
 		Permissions-Policy "camera=(), microphone=(), geolocation=()"
 	}
+	# Accounts and leaderboards (deploy/rhythmhit-api.service). Cloudflare
+	# passes the visitor address for the API's rate limits.
+	handle /api/* {
+		reverse_proxy 127.0.0.1:8095 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+		}
+	}
 	handle /media/* {
 		root * /srv/rhythmhit
 		header Cache-Control "public, max-age=31536000, immutable"

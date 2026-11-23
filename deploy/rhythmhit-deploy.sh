@@ -5,14 +5,16 @@
 #
 # Fetches the public repository, builds projects/unified/dist as an
 # unprivileged user, installs it as an immutable release and atomically
-# switches /srv/rhythmhit/current. If the HTTPS check fails, the previous
-# release is restored. Set SKIP_HTTP_CHECK=1 only for the first release
+# switches /srv/rhythmhit/current. The accounts API (rhythmhit-api.service)
+# is switched the same way under /opt/rhythmhit/api and restarted. If the
+# HTTPS check fails, the previous site and API are restored. Set SKIP_HTTP_CHECK=1 only for the first release
 # before DNS and the certificate exist.
 set -euo pipefail
 
 REMOTE=https://github.com/Scottshrimp/1354labGP7.git
 REPO=/opt/rhythmhit/repo
 SITE=/srv/rhythmhit
+API=/opt/rhythmhit/api
 HOST=rhythmhit.scottshrimp.com
 KEEP=5
 
@@ -47,7 +49,7 @@ if [[ ! -d $release ]]; then
 	dist=$work/projects/unified/dist
 	for required in index.html style.css console.js main.py tutorial/index.html \
 		browser/app.mjs browser/rh1.mjs browser/match.mjs \
-		browser/songs.json browser/starter-beat.wav; do
+		browser/songs.json browser/starter-beat.wav account.mjs leaderboard/index.html; do
 		[[ -s $dist/$required ]] || { echo "build is missing $required" >&2; exit 1; }
 	done
 	# Song audio is uploaded separately; refuse a build whose songs would be silent.
@@ -72,15 +74,41 @@ if [[ ! -d $release ]]; then
 	mv -T "$staging" "$release"
 fi
 
+api_release=$API/releases/$commit
+if [[ ! -d $api_release ]]; then
+	mkdir -p "$API/releases"
+	staging=$API/releases/.staging-$commit
+	rm -rf "$staging"
+	mkdir -p "$staging"
+	git -C "$REPO" show "$commit:projects/unified/server/rhythmhit_api.py" > "$staging/rhythmhit_api.py"
+	python3 -c 'import ast, sys; ast.parse(open(sys.argv[1]).read())' "$staging/rhythmhit_api.py"
+	chmod -R u=rwX,go=rX "$staging"
+	mv -T "$staging" "$api_release"
+fi
+previous_api=$(readlink "$API/current" 2>/dev/null || true)
+switch_api() {
+	ln -sfn "$1" "$API/current.next"
+	mv -Tf "$API/current.next" "$API/current"
+	# A failed restart shows up in the health check below, which rolls back.
+	systemctl restart rhythmhit-api || true
+}
+
 previous=$(readlink "$SITE/current" 2>/dev/null || true)
 ln -sfn "$release" "$SITE/current.next"
 mv -Tf "$SITE/current.next" "$SITE/current"
+switch_api "$api_release"
 
 check() {
 	local path
 	for path in / /tutorial/ /main.py /browser/app.mjs; do
 		curl -fsS -o /dev/null --max-time 10 --resolve "$HOST:443:127.0.0.1" "https://$HOST$path" || return 1
 	done
+	# The API needs a moment to bind after its restart.
+	for _ in 1 2 3 4 5 6 7 8 9 10; do
+		curl -fsS -o /dev/null --max-time 5 --resolve "$HOST:443:127.0.0.1" "https://$HOST/api/health" && return 0
+		sleep 1
+	done
+	return 1
 }
 if [[ ${SKIP_HTTP_CHECK:-} != 1 ]] && ! check; then
 	echo "HTTPS check failed" >&2
@@ -88,6 +116,10 @@ if [[ ${SKIP_HTTP_CHECK:-} != 1 ]] && ! check; then
 		ln -sfn "$previous" "$SITE/current.next"
 		mv -Tf "$SITE/current.next" "$SITE/current"
 		echo "restored $previous" >&2
+	fi
+	if [[ -n $previous_api ]]; then
+		switch_api "$previous_api"
+		echo "restored API $previous_api" >&2
 	fi
 	exit 1
 fi
@@ -97,5 +129,8 @@ echo "$commit" > "$SITE/deployed-commit"
 active=$(readlink "$SITE/current")
 ls -1dt "$SITE"/releases/*/ 2>/dev/null | tail -n +$((KEEP + 1)) | while read -r old; do
 	[[ ${old%/} == "$active" ]] || rm -rf "${old%/}"
+done
+ls -1dt "$API"/releases/*/ 2>/dev/null | tail -n +$((KEEP + 1)) | while read -r old; do
+	[[ ${old%/} == "$(readlink "$API/current")" ]] || rm -rf "${old%/}"
 done
 echo "rhythmhit live at $commit"

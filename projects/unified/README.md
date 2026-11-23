@@ -172,3 +172,21 @@ python3 -m unittest discover -s projects/unified/tests -v
 串口为 115200 baud。host 每次仅发送一帧，收到 ACK 才继续；超时重发由设备按序去重。设备事件同样有序号、确认和重发，防止丢失暂停或开始消息。会话失效时轮换 challenge，旧会话帧不能启用 PC。host 不再边转换歌曲边占用串口，也不使用阻塞的谱面批次 sleep。
 
 桌面模拟覆盖状态、协议、整局计分和实际单文件启动；实机仍需检查完整 PC 音画同步、连续切换、输入和音色。详细设计见[合并计划](../../docs/unification-plan.md)。
+
+## Accounts and leaderboard
+
+`server/rhythmhit_api.py` (standard library only) adds accounts, solo run
+records and per-song leaderboards. Caddy proxies `/api/*` to it on
+`127.0.0.1:8095`; `rhythmhit-deploy` installs it under `/opt/rhythmhit/api`
+and restarts `rhythmhit-api.service` together with each site release.
+
+- Sign up needs a username, a password typed twice and a Cloudflare
+  Turnstile check; passwords are stored as scrypt hashes, sessions as
+  SHA-256 hashes in `/var/lib/rhythmhit/rhythmhit.sqlite3` (daily backups
+  in `/var/lib/rhythmhit/backups`, 14 kept).
+- Only finished solo runs of a logged-in player are recorded. Scores come
+  from the browser, so the server checks them for consistency (score range,
+  combo bound, minimum play time) but cannot prove them genuine.
+- Turnstile keys live in `/etc/rhythmhit/api.env` (see
+  `deploy/rhythmhit-api.env.example`). Without keys the account links stay
+  hidden.

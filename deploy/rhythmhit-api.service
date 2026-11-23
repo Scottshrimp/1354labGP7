@@ -1,0 +1,34 @@
+# Accounts and leaderboards for rhythmhit.scottshrimp.com (Caddy proxies /api/*).
+# Install: /etc/systemd/system/rhythmhit-api.service; code is switched by rhythmhit-deploy.
+[Unit]
+Description=Rhythm Hit accounts and leaderboard API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=rhythmhit
+Group=rhythmhit
+EnvironmentFile=/etc/rhythmhit/api.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/usr/bin/python3 /opt/rhythmhit/api/current/rhythmhit_api.py
+Restart=on-failure
+RestartSec=3
+StateDirectory=rhythmhit
+StateDirectoryMode=0700
+UMask=0077
+MemoryMax=200M
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target

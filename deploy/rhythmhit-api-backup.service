@@ -1,0 +1,10 @@
+# Daily SQLite snapshot of the Rhythm Hit accounts database (keeps 14).
+[Unit]
+Description=Back up the Rhythm Hit accounts database
+
+[Service]
+Type=oneshot
+User=rhythmhit
+Group=rhythmhit
+UMask=0077
+ExecStart=/bin/sh -c 'mkdir -p /var/lib/rhythmhit/backups && python3 -c "import sqlite3,sys; s=sqlite3.connect(sys.argv[1]); d=sqlite3.connect(sys.argv[2]); s.backup(d); d.close()" /var/lib/rhythmhit/rhythmhit.sqlite3 /var/lib/rhythmhit/backups/rhythmhit-$(date -u +%%Y%%m%%dT%%H%%M%%SZ).sqlite3 && ls -1t /var/lib/rhythmhit/backups/*.sqlite3 | tail -n +15 | xargs -r rm -f'

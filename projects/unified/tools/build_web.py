@@ -37,6 +37,8 @@ def library():
         # Same title rules as pc_host.py so both hosts list songs identically.
         title = "".join(c for c in meta["title"].upper() if c.isascii() and (c.isalnum() or c in " -_"))[:18]
         songs.append({
+            # Stable leaderboard key: the song's folder name.
+            "id": meta_path.parent.name,
             "title": title or "SONG",
             "duration": duration,
             "notes": [list(note) for note in notes],
@@ -85,10 +87,13 @@ def build():
     for filename in ("app.mjs", "rh1.mjs", "match.mjs"):
         shutil.copyfile(WEB / "browser" / filename, browser / filename)
     app_version = digest(*(browser / name for name in ("app.mjs", "rh1.mjs", "match.mjs")))
+    shutil.copyfile(WEB / "account.mjs", DIST / "account.mjs")
+    account = f'"./account.mjs?v={digest(DIST / "account.mjs")}"'
     console = replace_once(
         (WEB / "console.js").read_text(encoding="utf-8"),
         '"./browser/app.mjs"', f'"./browser/app.mjs?v={app_version}"',
     )
+    console = replace_once(console, '"./account.mjs"', account)
     (DIST / "console.js").write_text(console, encoding="utf-8")
     shutil.copyfile(WEB / "style.css", DIST / "style.css")
     assets = {
@@ -106,6 +111,11 @@ def build():
         if before in tutorial:
             tutorial = replace_once(tutorial, before, after)
     (DIST / "index.html").write_text(page, encoding="utf-8")
+    board = (WEB / "leaderboard/index.html").read_text(encoding="utf-8")
+    board = replace_once(board, 'href="/style.css"', assets['href="/style.css"'])
+    board = replace_once(board, '"/account.mjs"', account.replace('"./', '"/'))
+    (DIST / "leaderboard").mkdir(exist_ok=True)
+    (DIST / "leaderboard/index.html").write_text(board, encoding="utf-8")
     (DIST / "tutorial").mkdir(exist_ok=True)
     (DIST / "tutorial/index.html").write_text(tutorial, encoding="utf-8")
 
@@ -114,7 +124,7 @@ def build():
         json.dumps({"title": TITLE, "duration": DURATION, "notes": notes}) + "\n", encoding="utf-8"
     )
     write_audio(browser / "starter-beat.wav")
-    catalog = [{"title": TITLE, "duration": DURATION, "notes": notes, "audio": "starter-beat.wav"}, *library()]
+    catalog = [{"id": "starter-beat", "title": TITLE, "duration": DURATION, "notes": notes, "audio": "starter-beat.wav"}, *library()]
     (browser / "songs.json").write_text(json.dumps(catalog, separators=(",", ":")) + "\n", encoding="utf-8")
 
     # Offer the committed unified firmware itself, so the board's standalone

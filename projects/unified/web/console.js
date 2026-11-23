@@ -1,3 +1,5 @@
+import { accountsEnabled, currentUser, finishRun, loadAccount, mountAccountNav, onUserChange, openAuth, startRun } from "./account.mjs";
+
 const $ = (id) => document.getElementById(id);
 
 const app = $("app");
@@ -13,6 +15,10 @@ const browserSetup = $("web-setup");
 const serialUnsupported = Boolean(browserSetup) && !(window.isSecureContext && "serial" in navigator);
 let browserHost;
 let returning = false;
+// Solo runs of a logged-in player are recorded for the leaderboard.
+let accountReady = false;
+let run = null;        // { id: Promise<run id | null> } for the current solo round
+let runSave = null;    // { kind, text } shown on the results screen
 const MODE_KEY = "rhythmhit.mode";
 const MODE_NAME = { versus: "Versus", solo: "Solo" };
 // Snapshots carry the live mode; before the first one, use the saved choice.
@@ -425,6 +431,57 @@ function renderStage() {
   }
 }
 
+function renderRunSave() {
+  const box = $("run-save");
+  const show = accountReady && isSolo() && state?.phase === "results";
+  box.hidden = !show;
+  if (!show) return;
+  box.dataset.kind = runSave?.kind || "";
+  if (runSave) {
+    box.replaceChildren(runSave.text);
+  } else if (!currentUser()) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = "Sign up";
+    button.addEventListener("click", () => openAuth("signup"));
+    box.replaceChildren(button, " to save your next solo runs to the leaderboard.");
+  } else {
+    box.hidden = true;
+  }
+}
+
+async function saveRun(pending, player) {
+  runSave = { kind: "pending", text: "Saving your run…" };
+  render();
+  const id = await pending.id;
+  try {
+    if (!id) throw new Error();
+    const result = await finishRun(id, player);
+    const parts = ["Saved to the leaderboard"];
+    if (result.rank) parts.push("Rank #" + result.rank);
+    if (result.personal_best) parts.push("New personal best");
+    runSave = { kind: "saved", text: parts.join(" · ") };
+  } catch (error) {
+    runSave = { kind: "error", text: error?.code === "login_required"
+      ? "Log in again to save runs. This one wasn’t saved."
+      : "This run couldn’t be saved to the leaderboard." };
+  }
+  render();
+}
+
+function trackRun(previous, latest) {
+  if (latest.phase === "results" && previous !== "results" && run) {
+    const pending = run;
+    run = null;
+    const [player] = latest.players;
+    if (latest.mode === "solo" && player?.status === "finished") void saveRun(pending, player);
+  } else if (["lobby", "waiting_devices"].includes(latest.phase) && previous !== latest.phase) {
+    // A cancelled or finished round leaves nothing to record.
+    run = null;
+    runSave = null;
+  }
+}
+
 function renderTimeline() {
   const visible = state && ["countdown", "playing", "results"].includes(state.phase);
   $("timeline").hidden = !visible;
@@ -460,6 +517,7 @@ function render() {
   app.dataset.mode = mode;
   renderMode();
   renderStage();
+  renderRunSave();
   renderPicker();
   renderTimeline();
   renderPlayers();
@@ -479,7 +537,16 @@ picker.addEventListener("submit", async (event) => {
   render();
   try {
     if (browserHost) {
-      await browserHost.confirm(index);
+      const song = state.songs[index];
+      // Start the record before the round so its minimum play time holds.
+      run = isSolo() && currentUser() && song?.id ? { id: startRun(song.id).catch(() => null) } : null;
+      runSave = null;
+      try {
+        await browserHost.confirm(index);
+      } catch (error) {
+        run = null;
+        throw error;
+      }
       return;
     }
     const response = await fetch("/confirm", {
@@ -611,8 +678,10 @@ function displaySnapshot(latest, available) {
     confirming = false;
     errorBox.hidden = true;
   }
+  const previous = state?.phase;
   state = latest;
   online = available;
+  trackRun(previous, latest);
   if (latest.mode) mode = latest.mode;
   render();
 }
@@ -641,6 +710,15 @@ function setupFirmwareCard() {
 
 if (browserSetup) {
   setupFirmwareCard();
+  mountAccountNav($("account"));
+  onUserChange(() => render());
+  loadAccount()
+    .then(() => {
+      if (!accountsEnabled()) throw new Error("accounts disabled");
+      accountReady = true;
+      render();
+    })
+    .catch(() => { $("account").hidden = true; });
   if (!serialUnsupported) setupModeSwitch();
   // Connect buttons could never work here; the stage explains what to do instead.
   if (serialUnsupported) browserSetup.querySelector(".pair-buttons").hidden = true;

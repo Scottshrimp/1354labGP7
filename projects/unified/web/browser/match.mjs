@@ -142,8 +142,8 @@ export class BrowserMatch {
     return {
       mode: this.mode,
       phase,
-      songs: this.songs.map(({ title, duration, notes }) => ({
-        title, duration_ms: duration, notes: notes.length,
+      songs: this.songs.map(({ id, title, duration, notes }) => ({
+        id, title, duration_ms: duration, notes: notes.length,
       })),
       song: song?.title ?? null,
       note_count: song?.notes.length ?? 0,
