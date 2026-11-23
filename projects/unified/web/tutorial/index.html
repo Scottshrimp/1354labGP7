@@ -37,16 +37,32 @@
     .controls th { color: var(--muted); font-weight: 600; font-size: 13px; background: var(--surface-2); }
     .fixes dt { font-weight: 650; margin-top: 16px; }
     .fixes dd { margin: 4px 0 0; color: var(--muted); }
+    .top-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px 6px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--text); font-size: 14px; font-weight: 600; text-decoration: none; white-space: nowrap; transition: border-color .15s; }
+    .back-link:hover { border-color: var(--line-strong); }
+    .back-link svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform .15s; }
+    .back-link:hover svg { transform: translateX(-2px); }
+    .callout { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: start; margin: 14px 0 0; padding: 16px 18px; border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--line)); border-left: 4px solid var(--warn); border-radius: var(--radius); background: color-mix(in srgb, var(--warn) 9%, var(--surface)); }
+    .callout-icon { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--warn); color: #fff; font-weight: 800; font-size: 15px; line-height: 1; }
+    .callout strong { display: block; font-size: 16px; letter-spacing: -.005em; }
+    .callout p { margin: 4px 0 0; color: var(--text); font-size: 15px; }
+    .guide h2 + .callout { margin: 0 0 12px; }
     kbd { font-family: inherit; font-size: 13px; padding: 1px 6px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface-2); }
   </style>
 </head>
 <body>
   <div class="app">
     <header class="top">
-      <a class="brand" href="/" aria-label="Rhythm Hit Versus">
-        <span class="brand-name">Rhythm Hit</span>
-        <span class="brand-sub">Tutorial</span>
-      </a>
+      <div class="top-left">
+        <a class="back-link" href="/">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8H3.5M7.5 4 3.5 8l4 4"/></svg>
+          <span>Back to console</span>
+        </a>
+        <a class="brand" href="/" aria-label="Rhythm Hit Versus">
+          <span class="brand-name">Rhythm Hit</span>
+          <span class="brand-sub">Tutorial</span>
+        </a>
+      </div>
     </header>
 
     <main class="guide">
@@ -73,16 +89,30 @@
         <li><strong>Open the <a href="https://python.microbit.org/" target="_blank" rel="noopener">micro:bit Python Editor</a></strong><p>Centre the joystick and connect the first micro:bit over USB.</p></li>
         <li><strong>Open main.py in the editor</strong><p>Use <em>Open…</em> and choose the downloaded file, replacing the current project. Don’t add any other files.</p></li>
         <li><strong>Send to micro:bit</strong><p>Pick the board when Chrome asks. When flashing finishes, the OLED shows the standalone menu.</p></li>
-        <li><strong>Repeat for the second board, then close the editor tab</strong><p>The editor keeps the serial port open. Close it so this site can talk to the boards.</p></li>
+        <li><strong>Repeat for the second board</strong><p>Flash the same main.py onto it.</p></li>
       </ol>
+      <div class="callout" role="note">
+        <span class="callout-icon" aria-hidden="true">!</span>
+        <div>
+          <strong>Close the Python Editor tab when you’re done flashing</strong>
+          <p>While it’s open, the editor keeps hold of the micro:bit’s USB serial port and this site can’t connect to the boards.</p>
+        </div>
+      </div>
 
       <h2>2 · Connect and play</h2>
+      <div class="callout" role="note">
+        <span class="callout-icon" aria-hidden="true">!</span>
+        <div>
+          <strong>Switch the GamePad power off for multiplayer</strong>
+          <p>Turn off the power switch on both GamePads before you plug the boards in. In multiplayer each micro:bit runs from its USB cable.</p>
+        </div>
+      </div>
       <ol class="howto">
-        <li><strong>Plug both boards into this computer</strong><p>Keep the joysticks centred while they start up.</p></li>
+        <li><strong>Plug both boards into this computer</strong><p>With the GamePad power off, keep the joysticks centred while they start up.</p></li>
         <li><strong>Open the <a href="/">console</a> and connect each player</strong><p>Click <em>Connect player 1</em>, choose a micro:bit, then do the same for player 2. Chrome remembers the boards, so later visits reconnect automatically.</p></li>
         <li><strong>Pick a song and confirm</strong><p>Once both boards reach the multiplayer lobby, song selection opens. Turn your speakers on — the music plays from the computer.</p></li>
         <li><strong>Ready up on the devices</strong><p>Each player pushes <kbd>→</kbd> on their own micro:bit. When both are ready the boards sync clocks and count down together.</p></li>
-        <li><strong>Hit the notes</strong><p>Push the joystick in the direction shown as each note reaches the line. Results appear on the page when the song ends; push <kbd>←</kbd> on both devices to return to the lobby.</p></li>
+        <li><strong>Hit the notes</strong><p>Push the joystick in the direction shown as each note reaches the line. Results appear on the page when the song ends; click <em>Back to lobby</em> on the page, or push <kbd>←</kbd> on both devices.</p></li>
       </ol>
 
       <h2>Controls</h2>
@@ -91,7 +121,7 @@
         <tbody>
           <tr><td>Lobby, after a song is confirmed</td><td><kbd>→</kbd> ready · <kbd>←</kbd> cancel the round</td></tr>
           <tr><td>During a song</td><td>Joystick or buttons in the note’s direction. There is no pause in versus mode.</td></tr>
-          <tr><td>Results</td><td><kbd>←</kbd> back to the lobby</td></tr>
+          <tr><td>Results</td><td><kbd>←</kbd> back to the lobby, or <em>Back to lobby</em> on the page</td></tr>
         </tbody>
       </table>
 
