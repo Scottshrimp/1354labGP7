@@ -33,10 +33,10 @@
     .controls th { color: var(--muted); font-weight: 600; font-size: 13px; background: var(--surface-2); }
     .fixes dt { font-weight: 650; margin-top: 16px; }
     .fixes dd { margin: 4px 0 0; color: var(--muted); }
-    .back-row { padding-top: 16px; }
-    .back-row + .top { padding-top: 4px; }
-    .back-arrow { display: inline-grid; place-items: center; width: 36px; height: 36px; margin-left: -8px; border-radius: 10px; color: var(--muted); transition: background-color .15s, color .15s; }
-    .back-arrow:hover { background: var(--surface-2); color: var(--text); }
+    .back-row { padding-top: 6px; }
+    .back-row + .stage { padding-top: clamp(14px, 3vw, 28px); }
+    .guide .back-arrow { display: inline-grid; place-items: center; width: 36px; height: 36px; margin-left: -8px; border-radius: 10px; color: var(--muted); transition: background-color .15s, color .15s; }
+    .guide .back-arrow:hover { background: var(--surface-2); color: var(--text); }
     .back-arrow svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
     .callout { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: start; margin: 14px 0 0; padding: 16px 18px; border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--line)); border-left: 4px solid var(--warn); border-radius: var(--radius); background: color-mix(in srgb, var(--warn) 9%, var(--surface)); }
     .callout-icon { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--warn); color: #fff; font-weight: 800; font-size: 15px; line-height: 1; }
@@ -48,11 +48,6 @@
 </head>
 <body>
   <div class="app">
-    <nav class="back-row">
-      <a class="back-arrow" href="/" aria-label="Back to console" title="Back to console">
-        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 10H4.5M9.5 5 4.5 10l5 5"/></svg>
-      </a>
-    </nav>
     <header class="top">
       <a class="brand" href="/" aria-label="Rhythm Hit Versus">
         <span class="brand-name">Rhythm Hit</span>
@@ -61,6 +56,11 @@
     </header>
 
     <main class="guide">
+      <nav class="back-row">
+        <a class="back-arrow" href="/" aria-label="Back to console" title="Back to console">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 10H4.5M9.5 5 4.5 10l5 5"/></svg>
+        </a>
+      </nav>
       <section class="stage">
         <p class="eyebrow">Getting started</p>
         <h1>Flash your micro:bit and play</h1>
