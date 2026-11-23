@@ -433,7 +433,30 @@ function displaySnapshot(latest, available) {
   render();
 }
 
+// The floating firmware card starts open on every load. Hiding it slides the
+// card off the right edge and leaves a slim tab there to bring it back.
+function setupFirmwareCard() {
+  const card = $("firmware-card");
+  const hide = $("firmware-hide");
+  const show = $("firmware-show");
+  if (!card || !hide || !show) return;
+  const set = (collapsed, moveFocus = true) => {
+    browserSetup.dataset.firmware = collapsed ? "collapsed" : "open";
+    card.inert = collapsed;
+    show.inert = !collapsed;
+    if (moveFocus) (collapsed ? show : hide).focus({ preventScroll: true });
+  };
+  show.inert = true;
+  hide.addEventListener("click", () => set(true));
+  show.addEventListener("click", () => set(false));
+  // Narrower layouts place the card inline, so it must never stay hidden there.
+  matchMedia("(min-width: 1100px)").addEventListener("change", (event) => {
+    if (!event.matches) set(false, false);
+  });
+}
+
 if (browserSetup) {
+  setupFirmwareCard();
   import("./browser/app.mjs")
     .then(({ startBrowserHost }) => startBrowserHost(displaySnapshot))
     .then((host) => { browserHost = host; })

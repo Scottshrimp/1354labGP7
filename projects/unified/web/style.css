@@ -663,7 +663,8 @@ kbd {
   border-radius: var(--radius);
   background: var(--surface);
 }
-.firmware-card h2 { margin: 0 0 10px; font-size: 15px; }
+.firmware-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 10px; }
+.firmware-card h2 { margin: 0; font-size: 15px; }
 .firmware-actions a {
   display: inline-flex;
   align-items: center;
@@ -683,14 +684,15 @@ kbd {
 }
 .firmware-actions a:hover { opacity: .8; }
 
-/* The collapse tab only exists where the card floats over the page. */
-.firmware-toggle { display: none; }
+/* Hide/show controls only exist where the card floats over the page. */
+.firmware-hide, .firmware-tab { display: none; }
 
 @media (max-width: 720px) {
   .browser-setup { grid-template-columns: minmax(0, 1fr); }
 }
 
-/* Wide screens: the firmware card leans in from the right edge of the window. */
+/* Wide screens: the firmware card leans in from the right edge of the window
+   and can be tucked away behind a slim tab on the same edge. */
 @media (min-width: 1100px) {
   .browser-setup { grid-template-columns: minmax(0, 1fr); }
   .firmware-card {
@@ -702,45 +704,13 @@ kbd {
     border-right: 0;
     border-radius: var(--radius) 0 0 var(--radius);
     box-shadow: -18px 18px 40px -24px rgba(20, 20, 30, .28), var(--shadow);
-    /* backwards (not both) so the collapse transition owns transform afterwards. */
+    /* backwards (not both) so the slide transition owns transform afterwards. */
     animation: peek .55s cubic-bezier(.2, .8, .2, 1) .15s backwards;
-    transition: transform .38s cubic-bezier(.2, .8, .2, 1), box-shadow .38s;
+    transition: transform .4s cubic-bezier(.2, .8, .2, 1), visibility 0s;
   }
-  .firmware-card[data-collapsed="true"] {
-    transform: translateX(100%);
-    box-shadow: none;
-  }
-  .firmware-body { transition: visibility 0s; }
-  /* Keep the hidden links out of the tab order once the slide finishes. */
-  .firmware-card[data-collapsed="true"] .firmware-body { visibility: hidden; transition-delay: .38s; }
-
-  .firmware-toggle {
-    display: grid;
-    place-items: center;
-    position: absolute;
-    top: 50%;
-    right: 100%;
-    width: 30px;
-    min-height: 0;
-    height: 56px;
-    padding: 0;
-    margin-top: -28px;
-    border: 1px solid var(--line);
-    border-right: 0;
-    border-radius: 10px 0 0 10px;
-    background: var(--surface);
-    color: var(--muted);
-    box-shadow: -10px 8px 20px -14px rgba(20, 20, 30, .3);
-  }
-  .firmware-toggle:hover { color: var(--text); }
-  .firmware-toggle:not(:disabled):active { transform: none; }
-  .firmware-toggle svg { transition: transform .38s cubic-bezier(.2, .8, .2, 1); }
-  .firmware-toggle:not(:disabled):hover svg { transform: translateX(1px); }
-  .firmware-card[data-collapsed="true"] .firmware-toggle svg,
-  .firmware-card[data-collapsed="true"] .firmware-toggle:not(:disabled):hover svg { transform: rotate(180deg); }
-  .firmware-card[data-collapsed="true"] .firmware-toggle { color: var(--text); }
   .firmware-card .firmware-actions { flex-wrap: nowrap; }
-  .firmware-card::before {
+  .firmware-card::before,
+  .firmware-tab::before {
     content: "";
     position: absolute;
     inset: 14px auto 14px 0;
@@ -748,6 +718,64 @@ kbd {
     border-radius: 0 3px 3px 0;
     background: linear-gradient(var(--p1), var(--p2));
   }
+
+  .firmware-hide {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 28px;
+    min-height: 0;
+    height: 28px;
+    padding: 0;
+    margin: -4px -8px -4px 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--faint);
+    transition: background-color .15s, color .15s;
+  }
+  .firmware-hide:hover { background: var(--surface-2); color: var(--text); }
+  .firmware-hide svg { width: 14px; height: 14px; }
+  .firmware-hide:not(:disabled):hover svg { transform: translateX(2px); }
+
+  .firmware-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    position: fixed;
+    top: 168px;
+    right: 0;
+    z-index: 5;
+    width: 40px;
+    min-height: 0;
+    padding: 16px 0 16px 3px;
+    border-radius: 12px 0 0 12px;
+    background: var(--button);
+    color: var(--button-text);
+    font-size: 12px;
+    font-weight: 650;
+    letter-spacing: .06em;
+    box-shadow: -12px 14px 30px -18px rgba(20, 20, 30, .45);
+    transform: translateX(100%);
+    visibility: hidden;
+    transition: transform .4s cubic-bezier(.2, .8, .2, 1), visibility 0s .4s;
+  }
+  .firmware-tab span { writing-mode: vertical-rl; }
+  .firmware-tab svg { width: 15px; height: 15px; }
+  .firmware-tab:not(:disabled):hover svg { transform: translateY(1px); }
+  .firmware-tab:not(:disabled):active { transform: none; }
+
+  .browser-setup[data-firmware="collapsed"] .firmware-card {
+    transform: translateX(calc(100% + 40px));
+    visibility: hidden;
+    transition: transform .4s cubic-bezier(.2, .8, .2, 1), visibility 0s .4s;
+  }
+  .browser-setup[data-firmware="collapsed"] .firmware-tab {
+    transform: none;
+    visibility: visible;
+    transition: transform .4s cubic-bezier(.2, .8, .2, 1) .12s, visibility 0s;
+  }
+  .browser-setup[data-firmware="collapsed"] .firmware-tab:hover { transform: translateX(-3px); transition-delay: 0s; }
 }
 
 @keyframes peek { from { transform: translateX(100%); } }
