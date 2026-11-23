@@ -74,8 +74,13 @@ if [[ ! -d $release ]]; then
 	mv -T "$staging" "$release"
 fi
 
-api_release=$API/releases/$commit
-if [[ ! -d $api_release ]]; then
+# Releases before web-v3 have no API; rolling back to them leaves the
+# running API untouched (the old pages simply don't call it).
+api_release=
+if git -C "$REPO" cat-file -e "$commit:projects/unified/server/rhythmhit_api.py" 2>/dev/null; then
+	api_release=$API/releases/$commit
+fi
+if [[ -n $api_release && ! -d $api_release ]]; then
 	mkdir -p "$API/releases"
 	staging=$API/releases/.staging-$commit
 	rm -rf "$staging"
@@ -96,7 +101,7 @@ switch_api() {
 previous=$(readlink "$SITE/current" 2>/dev/null || true)
 ln -sfn "$release" "$SITE/current.next"
 mv -Tf "$SITE/current.next" "$SITE/current"
-switch_api "$api_release"
+[[ -z $api_release ]] || switch_api "$api_release"
 
 check() {
 	local path
@@ -117,7 +122,7 @@ if [[ ${SKIP_HTTP_CHECK:-} != 1 ]] && ! check; then
 		mv -Tf "$SITE/current.next" "$SITE/current"
 		echo "restored $previous" >&2
 	fi
-	if [[ -n $previous_api ]]; then
+	if [[ -n $api_release && -n $previous_api ]]; then
 		switch_api "$previous_api"
 		echo "restored API $previous_api" >&2
 	fi
