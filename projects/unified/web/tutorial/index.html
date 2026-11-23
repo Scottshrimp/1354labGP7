@@ -18,10 +18,6 @@
     .guide h2 { font-size: 20px; letter-spacing: -.01em; margin: 40px 0 12px; }
     .guide p, .guide li { color: var(--text); }
     .guide .muted { color: var(--muted); }
-    .needs { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 10px; padding: 0; margin: 0; list-style: none; }
-    .needs li { padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
-    .needs strong { display: block; }
-    .needs span { color: var(--muted); font-size: 14px; }
     .howto { counter-reset: step; list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
     .howto > li { counter-increment: step; position: relative; padding: 16px 18px 16px 58px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
     .howto > li::before { content: counter(step, decimal-leading-zero); position: absolute; left: 18px; top: 16px; font-size: 13px; font-variant-numeric: tabular-nums; color: var(--muted); font-weight: 650; }
@@ -74,13 +70,6 @@
           <a href="/">Open the console</a>
         </div>
       </section>
-
-      <h2>What you need</h2>
-      <ul class="needs">
-        <li><strong>2 × micro:bit V2</strong><span>Each fitted to a GE1354 GamePad</span></li>
-        <li><strong>2 × USB data cables</strong><span>Charge-only cables won’t show up</span></li>
-        <li><strong>Desktop Chrome or Edge</strong><span>Web Serial isn’t available in Safari, Firefox or on phones</span></li>
-      </ul>
 
       <h2>1 · Flash each board</h2>
       <ol class="howto">
