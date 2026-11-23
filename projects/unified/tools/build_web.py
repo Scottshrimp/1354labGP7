@@ -13,12 +13,36 @@ from build import ROOT, assembled_source, compile_deployment, pack_song_assets, 
 
 WEB = ROOT / "web"
 DIST = ROOT / "dist"
+SONGS = ROOT.parent / "pc-integrated" / "songs"
 TITLE = "STARTER BEAT"
 DIRECTIONS = ("UP", "RIGHT", "DOWN", "LEFT")
 LANES = (0, 1, 2, 0, 1, 3, 3, 2)
 PITCHES = (48, 55, 60, 55, 50, 57, 62, 57, 46, 53, 58, 53, 48, 55, 63, 60)
 DURATION = 25_000
 BEATS = [(1000 + i * 500, pitch) for i, pitch in enumerate((PITCHES * 3)[:46])]
+
+
+def library():
+    """PC songs that have browser audio prepared by tools/web_audio.py."""
+    songs = []
+    for meta_path in sorted(SONGS.glob("*/song.json")):
+        meta = json.loads(meta_path.read_text(encoding="utf-8-sig"))
+        if not meta.get("web_audio"):
+            continue
+        chart = json.loads((meta_path.parent / meta["chart"]).read_text(encoding="utf-8-sig"))
+        duration = int(chart.get("duration_ms", meta["duration_ms"]))
+        notes = sorted({(int(n["time_ms"]), DIRECTIONS.index(n["direction"].upper())) for n in chart["notes"]})
+        if not notes or not 0 < duration <= 3_600_000 or any(not 0 <= t < duration for t, _ in notes):
+            raise ValueError(f"Invalid chart for {meta_path.parent.name}")
+        # Same title rules as pc_host.py so both hosts list songs identically.
+        title = "".join(c for c in meta["title"].upper() if c.isascii() and (c.isalnum() or c in " -_"))[:18]
+        songs.append({
+            "title": title or "SONG",
+            "duration": duration,
+            "notes": [list(note) for note in notes],
+            "audio": "/media/" + meta["web_audio"],
+        })
+    return songs
 
 
 def digest(*paths):
@@ -90,6 +114,8 @@ def build():
         json.dumps({"title": TITLE, "duration": DURATION, "notes": notes}) + "\n", encoding="utf-8"
     )
     write_audio(browser / "starter-beat.wav")
+    catalog = [{"title": TITLE, "duration": DURATION, "notes": notes, "audio": "starter-beat.wav"}, *library()]
+    (browser / "songs.json").write_text(json.dumps(catalog, separators=(",", ":")) + "\n", encoding="utf-8")
 
     song = {
         "title": TITLE,
@@ -100,7 +126,7 @@ def build():
     assets = pack_song_assets([song], standalone_builder())
     firmware = compile_deployment(assembled_source(assets))
     (DIST / "main.py").write_text(firmware, encoding="utf-8")
-    print(f"Static site: {DIST}")
+    print(f"Static site: {DIST} ({len(catalog)} songs: {', '.join(song['title'] for song in catalog)})")
     print(f"Flash in Python Editor: {DIST / 'main.py'} ({len(firmware.encode())} bytes)")
 
 

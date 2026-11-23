@@ -124,11 +124,11 @@ export async function startBrowserHost(onSnapshot) {
   const message = document.getElementById("usb-message");
   const setup = document.getElementById("web-setup");
   const audio = new Sound();
-  const response = await fetch(new URL("./starter-beat.json", import.meta.url));
-  if (!response.ok) throw new Error("The starter chart couldn’t be loaded. Reload the page to try again.");
-  const demoSong = await response.json();
-  demoSong.audio = new URL("./starter-beat.wav", import.meta.url);
-  const match = new BrowserMatch([demoSong], audio);
+  const response = await fetch(new URL("./songs.json", import.meta.url), { cache: "no-cache" });
+  if (!response.ok) throw new Error("The song list couldn’t be loaded. Reload the page to try again.");
+  const songs = await response.json();
+  for (const song of songs) song.audio = new URL(song.audio, import.meta.url);
+  const match = new BrowserMatch(songs, audio);
   const links = [null, null];
   const remembered = [null, null];
   const assigned = (port) => links.some((link) => link?.port === port);

@@ -1,16 +1,25 @@
 # Site block for /etc/caddy/Caddyfile on VPS3. Static files only; the
 # release command switches /srv/rhythmhit/current between immutable builds.
+# Song audio lives outside Git in /srv/rhythmhit/media with content-hashed
+# names (tools/web_audio.py), so it can be cached for good.
 rhythmhit.scottshrimp.com {
 	encode zstd gzip
-	root * /srv/rhythmhit/current
-	file_server
 	header {
 		-Server
 		X-Content-Type-Options nosniff
 		Referrer-Policy strict-origin-when-cross-origin
 		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+	}
+	handle /media/* {
+		root * /srv/rhythmhit
+		header Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
+	handle {
+		root * /srv/rhythmhit/current
 		# Small site: always revalidate so a new release (and its main.py)
 		# reaches visitors immediately.
-		Cache-Control "no-cache"
+		header Cache-Control "no-cache"
+		file_server
 	}
 }

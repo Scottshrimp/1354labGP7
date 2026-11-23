@@ -47,9 +47,23 @@ if [[ ! -d $release ]]; then
 	dist=$work/projects/unified/dist
 	for required in index.html style.css console.js main.py tutorial/index.html \
 		browser/app.mjs browser/rh1.mjs browser/match.mjs \
-		browser/starter-beat.json browser/starter-beat.wav; do
+		browser/songs.json browser/starter-beat.wav; do
 		[[ -s $dist/$required ]] || { echo "build is missing $required" >&2; exit 1; }
 	done
+	# Song audio is uploaded separately; refuse a build whose songs would be silent.
+	missing=$(python3 - "$dist/browser/songs.json" "$SITE" <<-'PY'
+		import json, os, sys
+		songs, site = json.load(open(sys.argv[1])), sys.argv[2]
+		for song in songs:
+		    if song["audio"].startswith("/media/") and not os.path.isfile(site + song["audio"]):
+		        print(song["audio"])
+		PY
+	)
+	if [[ -n $missing ]]; then
+		echo "upload these files to $SITE/media first:" >&2
+		echo "$missing" >&2
+		exit 1
+	fi
 	staging=$SITE/releases/.staging-$commit
 	rm -rf "$staging"
 	cp -R "$dist" "$staging"
