@@ -103,6 +103,14 @@ python3 -m http.server 8875 --bind 127.0.0.1 --directory projects/unified/dist
 ssh root@45.32.60.198 rhythmhit-deploy <完整 commit>
 ```
 
+网页曲库包含 STARTER BEAT 和 `../pc-integrated/songs/` 中已准备网页音频的歌曲。新增或替换歌曲音频后，在 Mac 上先让 `pc_host.py --check` 更新 `cache.wav`，再运行 `python3 projects/unified/tools/web_audio.py`。它用 afconvert 把 `cache.wav` 编码为带内容哈希的 `media/<id>-<hash>.m4a`（不进 Git），并写入 `song.json` 的 `web_audio`；Chrome 解码结果与 `cache.wav` 逐采样对齐，谱面无需调整。发布前先上传音频：
+
+```sh
+scp projects/unified/media/*.m4a root@45.32.60.198:/srv/rhythmhit/media/
+```
+
+音频由 Caddy 从 `/srv/rhythmhit/media` 长期缓存提供；发布命令发现缺少音频时会拒绝切换。
+
 `deploy/rhythmhit-deploy.sh` 以 `nobody` 身份运行 `build_web.py`，产物装入 `/srv/rhythmhit/releases/<commit>` 并原子切换 `current`；HTTPS 检查失败时自动回到上一版，保留最近 5 个版本。教程页源文件为 `web/tutorial/index.html`。访客的对局和串口通信由网页所在的浏览器处理。先验证 macOS 与 Windows 上的首次授权、刷新自动连接、连续两局、曲首与曲末的音画同步，以及对局中拔掉一块板后的结算。
 
 浏览器协议回归可以用 Node.js 运行，测试会让 JavaScript host 与两个固件模拟实例完成对局。

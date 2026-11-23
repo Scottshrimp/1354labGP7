@@ -10,7 +10,7 @@ the web build can reference it. Content-hashed names are cached forever.
 
 Upload new files to VPS3 before releasing a build that references them:
 
-    rsync -av --ignore-existing projects/unified/media/ root@45.32.60.198:/srv/rhythmhit/media/
+    scp projects/unified/media/*.m4a root@45.32.60.198:/srv/rhythmhit/media/
 """
 
 import argparse
