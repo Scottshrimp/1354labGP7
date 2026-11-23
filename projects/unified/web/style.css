@@ -686,3 +686,30 @@ kbd {
 @media (max-width: 720px) {
   .browser-setup { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Wide screens: the firmware card leans in from the right edge of the window. */
+@media (min-width: 1100px) {
+  .browser-setup { grid-template-columns: minmax(0, 1fr); }
+  .firmware-card {
+    position: fixed;
+    top: 168px;
+    right: 0;
+    z-index: 5;
+    padding: 18px 22px 18px 24px;
+    border-right: 0;
+    border-radius: var(--radius) 0 0 var(--radius);
+    box-shadow: -18px 18px 40px -24px rgba(20, 20, 30, .28), var(--shadow);
+    animation: peek .55s cubic-bezier(.2, .8, .2, 1) .15s both;
+  }
+  .firmware-card .firmware-actions { flex-wrap: nowrap; }
+  .firmware-card::before {
+    content: "";
+    position: absolute;
+    inset: 14px auto 14px 0;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: linear-gradient(var(--p1), var(--p2));
+  }
+}
+
+@keyframes peek { from { transform: translateX(100%); } }

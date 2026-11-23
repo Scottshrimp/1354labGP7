@@ -228,8 +228,6 @@ export async function startBrowserHost(onSnapshot) {
         display(time);
       }
     }, 5);
-  } else {
-    message.textContent = "Open this page over HTTPS or localhost in desktop Chrome or Edge to connect your boards.";
   }
   display(now());
 

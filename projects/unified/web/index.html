@@ -2,6 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <script>
+    // Web Serial needs a secure context: send plain-HTTP visits to HTTPS.
+    // Loopback previews (the Python host and local builds) stay on HTTP.
+    if (location.protocol === "http:" && !/^(localhost|127(\.\d+){3}|\[::1\])$|\.localhost$/.test(location.hostname)) {
+      location.replace("https://" + location.host + location.pathname + location.search + location.hash);
+    }
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="only light">
   <title>Rhythm Hit Versus</title>
