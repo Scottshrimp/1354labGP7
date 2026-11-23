@@ -8,6 +8,8 @@ const errorBox = $("error");
 const countdown = $("countdown");
 const count = $("count");
 const lead = $("lead");
+const browserSetup = $("web-setup");
+let browserHost;
 
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const number = new Intl.NumberFormat("en-US");
@@ -48,6 +50,7 @@ const IDLE = {
 const NOTICE = {
   sync_failed: "The last round timed out while syncing and was cancelled. Pick a song again once both devices are back in the lobby.",
   start_interrupted: "The last round was cancelled before it started. Pick a song again once both devices are back in the lobby.",
+  audio_failed: "Audio couldn’t start in time. Pick the song again to retry.",
 };
 
 const ERRORS = {
@@ -147,6 +150,7 @@ function renderPlayers() {
 
     if (!showScore) {
       let [title, sub] = IDLE[status] || [STATUS[status] || "", ""];
+      if (browserSetup && status === "disconnected") sub = "Choose this board above on your first visit";
       if (status === "idle" && phase === "waiting_devices") sub = "Waiting for the other device";
       if (status === "idle" && phase === "results") sub = "Waiting for opponent";
       const key = title + "|" + sub;
@@ -291,6 +295,7 @@ function connectedCount() {
 
 function stageCopy() {
   if (!state) {
+    if (browserSetup) return ["Setup", "Connect two micro:bits", "Plug in both boards and connect each player below."];
     return ["Connecting", "Connecting to host", "Start multiplayer.py in a terminal first."];
   }
   const song = state.song || "";
@@ -373,7 +378,9 @@ function renderCountdown() {
 function render() {
   const link = $("connection");
   link.dataset.online = String(online);
-  $("connection-text").textContent = online ? "Host connected" : state ? "Reconnecting…" : "Connecting…";
+  $("connection-text").textContent = browserSetup
+    ? (online ? "Web Serial ready" : "Browser setup")
+    : (online ? "Host connected" : state ? "Reconnecting…" : "Connecting…");
   app.dataset.phase = state ? state.phase : "boot";
   renderStage();
   renderPicker();
@@ -394,6 +401,10 @@ picker.addEventListener("submit", async (event) => {
   errorBox.hidden = true;
   render();
   try {
+    if (browserHost) {
+      await browserHost.confirm(index);
+      return;
+    }
     const response = await fetch("/confirm", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -412,21 +423,29 @@ picker.addEventListener("submit", async (event) => {
   }
 });
 
-const events = new EventSource("/events");
-events.addEventListener("message", (event) => {
-  const latest = JSON.parse(event.data);
+function displaySnapshot(latest, available) {
   if (latest.phase !== "lobby") {
     confirming = false;
     errorBox.hidden = true;
   }
   state = latest;
-  online = true;
+  online = available;
   render();
-});
-events.addEventListener("error", () => {
-  online = false;
-  confirming = false;
-  render();
-});
+}
+
+if (browserSetup) {
+  import("./browser/app.mjs")
+    .then(({ startBrowserHost }) => startBrowserHost(displaySnapshot))
+    .then((host) => { browserHost = host; })
+    .catch((error) => { $("usb-message").textContent = error.message; });
+} else {
+  const events = new EventSource("/events");
+  events.addEventListener("message", (event) => displaySnapshot(JSON.parse(event.data), true));
+  events.addEventListener("error", () => {
+    online = false;
+    confirming = false;
+    render();
+  });
+}
 
 render();

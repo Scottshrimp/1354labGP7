@@ -52,6 +52,10 @@ def song_assets():
         json.loads(path.read_text(encoding="utf-8"))
         for path in sorted((ROOT / "music").glob("*.json"))
     )
+    return pack_song_assets(songs, converter)
+
+
+def pack_song_assets(songs, converter):
     pitches = set()
     packed_songs = []
 
@@ -98,10 +102,11 @@ def song_assets():
     )
 
 
-def assembled_source():
+def assembled_source(assets=None):
     source = (ROOT / "src/microbit_main.py").read_text()
     begin, end = "# BEGIN GENERATED SONG", "# END GENERATED SONG"
-    assets = song_assets()
+    if assets is None:
+        assets = song_assets()
     source = (
         source[: source.index(begin)] + assets + source[source.index(end) + len(end) :]
     )
@@ -399,8 +404,7 @@ def deployment_payload(deployment):
     return blocks
 
 
-def build():
-    assembled = assembled_source()
+def compile_deployment(assembled):
     tree = ast.parse(assembled)
     for node in ast.walk(tree):
         body = getattr(node, "body", None)
@@ -417,6 +421,12 @@ def build():
         raise ValueError(
             "Unified deployment exceeds the 20 KB single-file source budget"
         )
+    return deployment
+
+
+def build():
+    assembled = assembled_source()
+    deployment = compile_deployment(assembled)
     # Keep the readable source and deployment in sync after validation.
     path = ROOT / "src/microbit_main.py"
     source = path.read_text()

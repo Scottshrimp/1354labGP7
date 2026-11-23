@@ -82,6 +82,30 @@ python3 projects/unified/multiplayer.py
 
 结算显示整局最大连击，由设备在 `DONE` 中提交；未重刷的旧固件仍可连接，最大连击改由 200 ms 遥测估算，可能略低于实际值。倒计时前同步失败会取消开场。对局中一块板掉线时，另一位继续游玩，掉线玩家在本局标记为未完赛。多人模式没有个人暂停，历史排行榜留待后续。
 
+## 纯网页版双人模式
+
+网站统一使用 `web/style.css` 的亮色样式。教程入口预留在 `/tutorial/`，后续页面沿用同一份样式。
+
+从仓库根目录构建并启动本地预览。
+
+```sh
+python3 projects/unified/tools/build_web.py
+python3 -m http.server 8875 --bind 127.0.0.1 --directory projects/unified/dist
+```
+
+在桌面 Chrome 或 Edge 打开 [http://127.0.0.1:8875/](http://127.0.0.1:8875/)。两台 micro:bit V2 都用 Python Editor 刷入网页提供的 `main.py`，刷后关闭编辑器串口，再用 USB 数据线把两块板接到同一台电脑。首次分别点击 **Connect player 1** 和 **Connect player 2** 授权。网页会自动尝试连接浏览器已授权且能明确分配的设备。端口被占用时，关闭本地 Python host 和其他正在连接的标签页。
+
+两块板进入联机大堂后，选择 **STARTER BEAT** 并确认。两位玩家各自在设备上向右 Ready。打完后都向左返回，再试一局。网页版的 **STARTER BEAT** 和下载固件里的单机演示旋律均由构建脚本生成，Python host 的完整本地曲库仍可用原入口游玩。
+
+发布时，把 `projects/unified/dist/` 里的文件作为同一个静态站部署，绑定域名并启用 HTTPS。服务器只需提供静态文件，包括以 JavaScript MIME 类型提供 `.mjs` 文件。访客的对局和串口通信由网页所在的浏览器处理。先验证 macOS 与 Windows 上的首次授权、刷新自动连接、连续两局、曲首与曲末的音画同步，以及对局中拔掉一块板后的结算。
+
+浏览器协议回归可以用 Node.js 运行，测试会让 JavaScript host 与两个固件模拟实例完成对局。
+
+```sh
+python3 projects/unified/tools/build_web.py
+node --test projects/unified/tests/test_browser_host.mjs
+```
+
 ## 操作与首轮测试
 
 | 场景 | 操作 / 应看到的结果 |
