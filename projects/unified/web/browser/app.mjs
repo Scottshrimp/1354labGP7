@@ -118,7 +118,22 @@ class SerialLink {
   }
 }
 
+// The floating firmware card starts open on every load; the tab slides it
+// off the right edge so it doesn't cover the console.
+function setupFirmwareToggle() {
+  const card = document.getElementById("firmware-card");
+  const toggle = document.getElementById("firmware-toggle");
+  if (!card || !toggle) return;
+  toggle.addEventListener("click", () => {
+    const collapse = card.dataset.collapsed !== "true";
+    card.dataset.collapsed = String(collapse);
+    toggle.setAttribute("aria-expanded", String(!collapse));
+    toggle.setAttribute("aria-label", collapse ? "Show firmware card" : "Hide firmware card");
+  });
+}
+
 export async function startBrowserHost(onSnapshot) {
+  setupFirmwareToggle();
   const serial = window.isSecureContext ? navigator.serial : null;
   const buttons = [1, 2].map((player) => document.getElementById("connect-" + player));
   const message = document.getElementById("usb-message");

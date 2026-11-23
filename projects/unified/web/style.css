@@ -683,6 +683,9 @@ kbd {
 }
 .firmware-actions a:hover { opacity: .8; }
 
+/* The collapse tab only exists where the card floats over the page. */
+.firmware-toggle { display: none; }
+
 @media (max-width: 720px) {
   .browser-setup { grid-template-columns: minmax(0, 1fr); }
 }
@@ -699,8 +702,43 @@ kbd {
     border-right: 0;
     border-radius: var(--radius) 0 0 var(--radius);
     box-shadow: -18px 18px 40px -24px rgba(20, 20, 30, .28), var(--shadow);
-    animation: peek .55s cubic-bezier(.2, .8, .2, 1) .15s both;
+    /* backwards (not both) so the collapse transition owns transform afterwards. */
+    animation: peek .55s cubic-bezier(.2, .8, .2, 1) .15s backwards;
+    transition: transform .38s cubic-bezier(.2, .8, .2, 1), box-shadow .38s;
   }
+  .firmware-card[data-collapsed="true"] {
+    transform: translateX(100%);
+    box-shadow: none;
+  }
+  .firmware-body { transition: visibility 0s; }
+  /* Keep the hidden links out of the tab order once the slide finishes. */
+  .firmware-card[data-collapsed="true"] .firmware-body { visibility: hidden; transition-delay: .38s; }
+
+  .firmware-toggle {
+    display: grid;
+    place-items: center;
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    width: 30px;
+    min-height: 0;
+    height: 56px;
+    padding: 0;
+    margin-top: -28px;
+    border: 1px solid var(--line);
+    border-right: 0;
+    border-radius: 10px 0 0 10px;
+    background: var(--surface);
+    color: var(--muted);
+    box-shadow: -10px 8px 20px -14px rgba(20, 20, 30, .3);
+  }
+  .firmware-toggle:hover { color: var(--text); }
+  .firmware-toggle:not(:disabled):active { transform: none; }
+  .firmware-toggle svg { transition: transform .38s cubic-bezier(.2, .8, .2, 1); }
+  .firmware-toggle:not(:disabled):hover svg { transform: translateX(1px); }
+  .firmware-card[data-collapsed="true"] .firmware-toggle svg,
+  .firmware-card[data-collapsed="true"] .firmware-toggle:not(:disabled):hover svg { transform: rotate(180deg); }
+  .firmware-card[data-collapsed="true"] .firmware-toggle { color: var(--text); }
   .firmware-card .firmware-actions { flex-wrap: nowrap; }
   .firmware-card::before {
     content: "";

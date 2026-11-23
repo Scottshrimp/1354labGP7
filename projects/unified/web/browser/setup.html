@@ -6,11 +6,17 @@
         </div>
         <p id="usb-message" role="status"></p>
       </div>
-      <aside class="firmware-card" aria-labelledby="firmware-heading">
-        <h2 id="firmware-heading">micro:bit firmware</h2>
-        <div class="firmware-actions">
-          <a class="firmware-download" href="./main.py" download>Download main.py</a>
-          <a href="./tutorial/">Tutorial</a>
+      <aside class="firmware-card" id="firmware-card" aria-labelledby="firmware-heading">
+        <button type="button" class="firmware-toggle" id="firmware-toggle"
+          aria-expanded="true" aria-controls="firmware-body" aria-label="Hide firmware card">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5"/></svg>
+        </button>
+        <div class="firmware-body" id="firmware-body">
+          <h2 id="firmware-heading">micro:bit firmware</h2>
+          <div class="firmware-actions">
+            <a class="firmware-download" href="./main.py" download>Download main.py</a>
+            <a href="./tutorial/">Tutorial</a>
+          </div>
         </div>
       </aside>
     </section>
