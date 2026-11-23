@@ -138,13 +138,16 @@ export async function startBrowserHost(onSnapshot) {
   function display(time) {
     const snapshot = match.snapshot(time);
     setup.hidden = !["waiting_devices", "lobby", "results"].includes(snapshot.phase);
+    const solo = match.mode === "solo";
     buttons.forEach((button, index) => {
-      const link = links[index];
-      const player = index + 1;
+      // Solo shows one button that reflects whichever board is plugged in.
+      const link = solo ? links.find(Boolean) : links[index];
+      const name = solo ? "micro:bit" : "player " + (index + 1);
+      button.hidden = solo && index === 1;
       button.disabled = !serial || picking || Boolean(link);
-      button.textContent = !link ? "Connect player " + player
-        : link.board.status === "connecting" ? "Connecting player " + player + "…"
-        : "Player " + player + " connected";
+      button.textContent = !link ? "Connect " + name
+        : link.board.status === "connecting" ? "Connecting " + name + "…"
+        : name[0].toUpperCase() + name.slice(1) + " connected";
     });
     onSnapshot(snapshot, Boolean(serial));
   }
@@ -232,6 +235,15 @@ export async function startBrowserHost(onSnapshot) {
   display(now());
 
   return {
+    get mode() {
+      return match.mode;
+    },
+    setMode(mode) {
+      if (match.phase === "results") match.returnToLobby();
+      match.setMode(mode);
+      message.textContent = "";
+      display(now());
+    },
     returnToLobby() {
       match.returnToLobby();
       display(now());

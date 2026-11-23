@@ -8,19 +8,35 @@ export class BrowserMatch {
   song = null;
   startAt = null;
   notice = "";
+  // "versus" plays both seats head to head; "solo" plays one board alone.
+  mode = "versus";
 
   constructor(songs, audio) {
     this.songs = songs;
     this.audio = audio;
   }
 
+  // Solo plays whichever board is plugged in, preferring the first seat.
+  get lobbySeats() {
+    if (this.mode === "versus") return this.seats;
+    return [this.seats.find((seat) => seat?.connected) ?? this.seats[0]];
+  }
+
   get devicesReady() {
-    return this.seats.every((seat) => seat?.connected && seat.inLobby);
+    return this.lobbySeats.every((seat) => seat?.connected && seat.inLobby);
+  }
+
+  setMode(mode) {
+    if (!["versus", "solo"].includes(mode)) throw new Error("Invalid mode.");
+    if (this.phase !== "lobby") throw new Error("Finish the round before switching modes.");
+    this.mode = mode;
+    this.notice = "";
   }
 
   checkSelection(index) {
     if (this.phase !== "lobby" || !this.devicesReady) {
-      throw new Error("Both micro:bits must be in the lobby.");
+      throw new Error(this.mode === "solo" ? "Your micro:bit must be in the lobby."
+        : "Both micro:bits must be in the lobby.");
     }
     if (!Number.isInteger(index) || !this.songs[index]) throw new Error("Invalid song.");
     return this.songs[index];
@@ -28,7 +44,7 @@ export class BrowserMatch {
 
   begin(index) {
     this.song = this.checkSelection(index);
-    this.players = this.seats.slice();
+    this.players = this.lobbySeats.slice();
     this.round = (this.round + 1) % 65536;
     this.phase = "readying";
     this.notice = "";
@@ -124,13 +140,14 @@ export class BrowserMatch {
     const at = phase === "results" ? this.endedAt : now;
     const elapsed = this.startAt === null ? 0 : Math.round(at - this.startAt);
     return {
+      mode: this.mode,
       phase,
       songs: this.songs.map(({ title, duration, notes }) => ({
         title, duration_ms: duration, notes: notes.length,
       })),
       song: song?.title ?? null,
       note_count: song?.notes.length ?? 0,
-      players: (inRound ? this.players : this.seats).map((player) => ({
+      players: (inRound ? this.players : this.lobbySeats).map((player) => ({
         status: !inRound && player?.inLobby ? "idle" : player?.status ?? "disconnected",
         score: inRound ? player.score : null,
         combo: inRound ? player.combo : null,

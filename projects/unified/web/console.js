@@ -13,6 +13,15 @@ const browserSetup = $("web-setup");
 const serialUnsupported = Boolean(browserSetup) && !(window.isSecureContext && "serial" in navigator);
 let browserHost;
 let returning = false;
+const MODE_KEY = "rhythmhit.mode";
+const MODE_NAME = { versus: "Versus", solo: "Solo" };
+// Snapshots carry the live mode; before the first one, use the saved choice.
+let mode = "versus";
+try {
+  if (browserSetup && localStorage.getItem(MODE_KEY) === "solo") mode = "solo";
+} catch { /* storage unavailable */ }
+const preferredMode = mode;
+const isSolo = () => mode === "solo";
 
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const number = new Intl.NumberFormat("en-US");
@@ -48,6 +57,11 @@ const IDLE = {
   quit: ["Cancelled", "Back in the lobby soon"],
   failed: ["Chart transfer lost", "Back in the lobby soon"],
   dropped: ["Device dropped", "Plug it back in to reconnect"],
+};
+
+const SOLO_NOTICE = {
+  sync_failed: "The last round timed out while syncing and was cancelled. Pick a song again once your micro:bit is back in the lobby.",
+  start_interrupted: "The last round was cancelled before it started. Pick a song again once your micro:bit is back in the lobby.",
 };
 
 const NOTICE = {
@@ -121,6 +135,11 @@ function tweenScore(card, value) {
 
 function outcomes(players) {
   if (state.phase !== "results") return [null, null];
+  if (isSolo()) {
+    const [player] = players;
+    if (player.status !== "finished") return ["dnf"];
+    return [player.miss === 0 ? "fc" : null];
+  }
   const finished = players.map((p) => p.status === "finished");
   if (!finished[0] && !finished[1]) return ["dnf", "dnf"];
   if (finished[0] !== finished[1]) return finished.map((done) => (done ? "win" : "dnf"));
@@ -129,10 +148,12 @@ function outcomes(players) {
   return a > b ? ["win", "lose"] : ["lose", "win"];
 }
 
-const OUTCOME_LABEL = { win: "Winner", tie: "Tie", dnf: "DNF" };
+const OUTCOME_LABEL = { win: "Winner", tie: "Tie", dnf: "DNF", fc: "Full combo" };
 
 function renderPlayers() {
-  const players = state ? state.players : [{ status: "disconnected" }, { status: "disconnected" }];
+  const players = state ? state.players
+    : Array.from({ length: isSolo() ? 1 : 2 }, () => ({ status: "disconnected" }));
+  cards[0].root.querySelector("h2").textContent = isSolo() ? "Solo player" : "Player 1";
   const phase = state ? state.phase : "boot";
   const inRound = ["countdown", "playing", "results"].includes(phase);
   const maxScore = (state?.note_count || 0) * 100;
@@ -156,8 +177,12 @@ function renderPlayers() {
       if (browserSetup && status === "disconnected") {
         sub = serialUnsupported ? "Needs desktop Chrome or Edge" : "Choose this board above on your first visit";
       }
-      if (status === "idle" && phase === "waiting_devices") sub = "Waiting for the other device";
-      if (status === "idle" && phase === "results") sub = "Waiting for opponent";
+      if (isSolo()) {
+        if (status === "ready") sub = "Starting soon";
+      } else {
+        if (status === "idle" && phase === "waiting_devices") sub = "Waiting for the other device";
+        if (status === "idle" && phase === "results") sub = "Waiting for opponent";
+      }
       const key = title + "|" + sub;
       if (key !== card.idleKey) {
         card.idleKey = key;
@@ -197,7 +222,7 @@ function renderPlayers() {
 function renderLead(players, phase, result) {
   lead.replaceChildren();
   lead.dataset.leader = "";
-  if (!["playing", "results"].includes(phase)) return;
+  if (isSolo() || !["playing", "results"].includes(phase)) return;
   if (players.some((p) => p.score === null || p.score === undefined)) return;
   const [a, b] = players.map((p) => p.score);
   const strong = document.createElement("strong");
@@ -306,6 +331,7 @@ function stageCopy() {
       "This browser can’t talk to a micro:bit over USB. Safari, Firefox and phone browsers don’t support Web Serial, so open rhythmhit.scottshrimp.com in desktop Chrome or Edge to connect your boards. You can still download the firmware and read the tutorial here.",
     ];
   }
+  if (isSolo()) return soloCopy();
   if (!state) {
     if (browserSetup) return ["Setup", "Connect two micro:bits", "Plug in both boards and connect each player below."];
     return ["Connecting", "Connecting to host", "Start multiplayer.py in a terminal first."];
@@ -340,13 +366,44 @@ function stageCopy() {
   }
 }
 
+function soloCopy() {
+  if (!state) return ["Setup", "Connect a micro:bit", "Plug in your board and connect it below."];
+  const song = state.song || "";
+  switch (state.phase) {
+    case "waiting_devices":
+      return [
+        "Waiting for device · " + connectedCount() + " / 1",
+        "Connect your micro:bit",
+        "Plug your flashed micro:bit into this computer over USB. Song selection opens once it reaches the lobby.",
+      ];
+    case "lobby":
+      return ["Lobby", "Pick a song", "Once confirmed, the chart loads onto your micro:bit and you ready up on the device."];
+    case "readying":
+      return ["Waiting for you", song, "Push right on your micro:bit when you’re ready. Pushing left cancels the round."];
+    case "syncing":
+      return ["Syncing", song, "Aligning your micro:bit with this computer’s clock."];
+    case "countdown":
+      return ["Get ready", song, "Music plays from this computer."];
+    case "playing":
+      return ["Now playing", song, ""];
+    case "results": {
+      const [player] = state.players;
+      const heading = player.status !== "finished" ? "Didn’t finish"
+        : player.miss === 0 ? "Full combo!" : number.format(player.score) + " points";
+      return ["Results · " + song, heading, "Head back to the lobby to play again, or push left on your device."];
+    }
+    default:
+      return ["", "", ""];
+  }
+}
+
 function renderStage() {
   const [eyebrow, heading, hint] = stageCopy();
   $("phase").textContent = eyebrow;
   $("heading").textContent = heading;
   $("hint").textContent = hint;
   $("hint").hidden = !hint;
-  document.title = (heading && state ? heading + " · " : "") + "Rhythm Hit Versus";
+  document.title = (heading && state ? heading + " · " : "") + "Rhythm Hit " + MODE_NAME[mode];
 
   const back = $("back-lobby");
   back.hidden = state?.phase !== "results";
@@ -354,7 +411,8 @@ function renderStage() {
   back.setAttribute("aria-busy", String(returning));
 
   const notice = $("notice");
-  const message = state && ["lobby", "waiting_devices"].includes(state.phase) ? NOTICE[state.notice] : "";
+  const message = state && ["lobby", "waiting_devices"].includes(state.phase)
+    ? (isSolo() && SOLO_NOTICE[state.notice]) || NOTICE[state.notice] : "";
   notice.textContent = message || "";
   notice.hidden = !message;
 
@@ -399,6 +457,8 @@ function render() {
     ? (serialUnsupported ? "Use Chrome or Edge" : online ? "Web Serial ready" : "Browser setup")
     : (online ? "Host connected" : state ? "Reconnecting…" : "Connecting…");
   app.dataset.phase = state ? state.phase : "boot";
+  app.dataset.mode = mode;
+  renderMode();
   renderStage();
   renderPicker();
   renderTimeline();
@@ -463,6 +523,89 @@ $("back-lobby").addEventListener("click", async () => {
   }
 });
 
+/* ---------- Mode switch ---------- */
+
+const modeBox = $("mode");
+const modeToggle = $("mode-toggle");
+const modeMenu = $("mode-menu");
+const modeItems = [...modeMenu.querySelectorAll("[data-mode]")];
+
+// Modes change only between rounds; results return to the lobby first.
+function canSwitchMode() {
+  return Boolean(browserHost) && !confirming && !returning &&
+    ["waiting_devices", "lobby", "results"].includes(state?.phase);
+}
+
+function renderMode() {
+  $("mode-label").textContent = MODE_NAME[mode];
+  $("mode-static").textContent = MODE_NAME[mode];
+  for (const item of modeItems) item.setAttribute("aria-checked", String(item.dataset.mode === mode));
+  const allowed = canSwitchMode();
+  modeToggle.disabled = !allowed;
+  modeToggle.title = allowed || !browserHost ? "" : "Finish the round to switch modes";
+  if (!allowed && !modeMenu.hidden) closeModeMenu(false);
+}
+
+function openModeMenu() {
+  modeMenu.hidden = false;
+  modeToggle.setAttribute("aria-expanded", "true");
+  (modeItems.find((item) => item.dataset.mode === mode) ?? modeItems[0]).focus();
+}
+
+function closeModeMenu(restoreFocus = true) {
+  if (modeMenu.hidden) return;
+  modeMenu.hidden = true;
+  modeToggle.setAttribute("aria-expanded", "false");
+  if (restoreFocus) modeToggle.focus();
+}
+
+function chooseMode(next) {
+  closeModeMenu();
+  if (next === mode || !canSwitchMode()) return;
+  try {
+    browserHost.setMode(next);
+  } catch (error) {
+    errorBox.textContent = error.message;
+    errorBox.hidden = false;
+    return;
+  }
+  mode = next;
+  errorBox.hidden = true;
+  try { localStorage.setItem(MODE_KEY, next); } catch { /* storage unavailable */ }
+  render();
+}
+
+function setupModeSwitch() {
+  modeBox.hidden = false;
+  $("mode-static").hidden = true;
+  modeToggle.addEventListener("click", () => (modeMenu.hidden ? openModeMenu() : closeModeMenu()));
+  modeToggle.addEventListener("keydown", (event) => {
+    if (["ArrowDown", "ArrowUp"].includes(event.key) && modeMenu.hidden && !modeToggle.disabled) {
+      event.preventDefault();
+      openModeMenu();
+    }
+  });
+  for (const item of modeItems) item.addEventListener("click", () => chooseMode(item.dataset.mode));
+  modeMenu.addEventListener("keydown", (event) => {
+    const at = modeItems.indexOf(document.activeElement);
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeModeMenu();
+    } else if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
+      event.preventDefault();
+      const last = modeItems.length - 1;
+      const next = event.key === "Home" ? 0 : event.key === "End" ? last
+        : (at + (event.key === "ArrowDown" ? 1 : last)) % modeItems.length;
+      modeItems[next].focus();
+    } else if (event.key === "Tab") {
+      closeModeMenu(false);
+    }
+  });
+  document.addEventListener("pointerdown", (event) => {
+    if (!modeBox.contains(event.target)) closeModeMenu(false);
+  });
+}
+
 function displaySnapshot(latest, available) {
   if (latest.phase !== "lobby") {
     confirming = false;
@@ -470,6 +613,7 @@ function displaySnapshot(latest, available) {
   }
   state = latest;
   online = available;
+  if (latest.mode) mode = latest.mode;
   render();
 }
 
@@ -497,11 +641,17 @@ function setupFirmwareCard() {
 
 if (browserSetup) {
   setupFirmwareCard();
+  if (!serialUnsupported) setupModeSwitch();
   // Connect buttons could never work here; the stage explains what to do instead.
   if (serialUnsupported) browserSetup.querySelector(".pair-buttons").hidden = true;
   import("./browser/app.mjs")
     .then(({ startBrowserHost }) => startBrowserHost(displaySnapshot))
-    .then((host) => { browserHost = host; })
+    .then((host) => {
+      browserHost = host;
+      // Restore the saved mode; the host always starts in versus.
+      if (preferredMode !== host.mode) host.setMode(preferredMode);
+      render();
+    })
     .catch((error) => { $("usb-message").textContent = error.message; });
 } else {
   const events = new EventSource("/events");

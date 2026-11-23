@@ -82,6 +82,105 @@ body {
   white-space: nowrap;
 }
 
+a.brand-name { color: inherit; text-decoration: none; }
+
+/* Mode switch (browser host): looks like the subtitle until hovered. */
+.mode { position: relative; }
+.mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: -4px 0;
+  padding: 4px 6px 4px 10px;
+  border: 0;
+  border-left: 1px solid var(--line-strong);
+  border-radius: 0 8px 8px 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color .15s, color .15s;
+}
+.mode-toggle svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform .2s;
+}
+.mode-toggle:hover, .mode-toggle[aria-expanded="true"] { background: var(--surface-2); color: var(--text); }
+.mode-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+.mode-toggle:disabled { cursor: default; background: transparent; color: var(--muted); }
+.mode-toggle:disabled svg { opacity: .35; }
+
+.mode-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 20;
+  display: grid;
+  gap: 2px;
+  width: 17.5rem;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: 0 2px 6px rgba(20, 20, 30, .06), 0 18px 40px -18px rgba(20, 20, 30, .3);
+  transform-origin: 24px 0;
+  animation: menu-in .16s cubic-bezier(.2, .8, .2, 1);
+}
+@keyframes menu-in { from { opacity: 0; transform: translateY(-4px) scale(.98); } }
+.mode-menu button {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 16px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px 10px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.mode-menu button:hover, .mode-menu button:focus-visible { background: var(--surface-2); outline: none; }
+.mode-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--muted);
+}
+.mode-menu button:hover .mode-icon { background: var(--surface); }
+.mode-icon svg, .mode-check {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.mode-icon svg { width: 20px; height: 20px; }
+.mode-menu [aria-checked="true"] .mode-icon { background: var(--text); color: var(--bg); }
+.mode-copy { display: grid; min-width: 0; }
+.mode-copy strong { font-size: 14px; font-weight: 650; }
+.mode-copy small { color: var(--muted); font-size: 12.5px; line-height: 1.35; }
+.mode-check { width: 16px; height: 16px; stroke-width: 2; opacity: 0; }
+.mode-menu [aria-checked="true"] .mode-check { opacity: 1; }
+
+/* Solo: one wide player card, no opponent column. */
+.app[data-mode="solo"] .arena { grid-template-columns: minmax(0, 1fr); }
+.app[data-mode="solo"] #versus,
+.app[data-mode="solo"] #player-2 { display: none; }
+
 .link {
   display: inline-flex;
   align-items: center;
@@ -492,6 +591,7 @@ button[aria-busy="true"] { opacity: .6; cursor: progress; }
   letter-spacing: .04em;
 }
 .outcome[data-kind="tie"] { background: var(--text); color: var(--bg); }
+.outcome[data-kind="fc"] { background: var(--good); color: #fff; }
 .outcome[data-kind="dnf"] { background: transparent; color: var(--bad); box-shadow: 0 0 0 1px currentColor inset; }
 
 .stats {
@@ -632,6 +732,7 @@ kbd {
 
 @media (max-width: 720px) {
   .brand-sub { display: none; }
+  .mode-menu { width: min(17.5rem, calc(100vw - 32px)); }
   .steps { gap: 4px; }
   .step-no { display: none; }
   .steps li { font-size: 12px; justify-content: center; }
