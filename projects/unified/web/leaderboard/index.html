@@ -25,14 +25,6 @@
       <p class="hint" id="hint">Best solo score per player. Play solo while logged in on the console to get on the board.</p>
     </section>
 
-    <section class="board-gate" id="gate" hidden>
-      <p>The leaderboard is for players with an account. Sign up to save your solo runs and see where you rank.</p>
-      <div class="board-gate-actions">
-        <button type="button" id="gate-signup">Sign up</button>
-        <button type="button" class="secondary" id="gate-login">Log in</button>
-      </div>
-    </section>
-
     <p class="error" id="board-error" role="alert" hidden></p>
 
     <div id="board" hidden>
@@ -58,7 +50,15 @@
         <p class="board-empty" id="empty" hidden>No runs yet. Be the first on this song.</p>
       </section>
 
-      <section class="board-table" aria-labelledby="recent-title">
+      <section class="board-gate" id="gate" hidden>
+        <p>Want your name on the board? Sign up, then play solo on the console while logged in. Your runs are saved and ranked here.</p>
+        <div class="board-gate-actions">
+          <button type="button" id="gate-signup">Sign up</button>
+          <button type="button" class="secondary" id="gate-login">Log in</button>
+        </div>
+      </section>
+
+      <section class="board-table" id="recent-section" aria-labelledby="recent-title" hidden>
         <h2 id="recent-title">Your recent runs</h2>
         <table>
           <thead>
@@ -152,6 +152,9 @@
         return row;
       }));
       $("recent-empty").hidden = data.recent.length > 0;
+      // Personal parts only make sense with an account; the board itself is public.
+      $("recent-section").hidden = !data.user;
+      $("gate").hidden = Boolean(data.user);
     }
 
     async function load(id = song) {
@@ -165,18 +168,8 @@
       } catch (error) {
         if (ticket !== loading) return;
         if (error.status === 404 && id) return load("");
-        $("board-error").textContent = error.status === 401 ? "Log in to see the leaderboard."
-          : "The leaderboard couldn’t be loaded. Reload the page to try again.";
+        $("board-error").textContent = "The leaderboard couldn’t be loaded. Reload the page to try again.";
         $("board-error").hidden = false;
-      }
-    }
-
-    function showGate(signedIn) {
-      $("gate").hidden = signedIn;
-      if (!signedIn) {
-        $("board").hidden = true;
-        $("heading").textContent = "See where you rank";
-        $("eyebrow").textContent = "Leaderboard";
       }
     }
 
@@ -184,10 +177,8 @@
     $("gate-login").addEventListener("click", () => openAuth("login"));
     mountAccountNav($("account"), { leaderboard: false });
     loadAccount().then(() => {
-      onUserChange((user) => {
-        showGate(Boolean(user));
-        if (user) void load();
-      });
+      // Reload on log in / log out so "You", your rank and recent runs follow the session.
+      onUserChange(() => void load());
     }).catch(() => {
       $("heading").textContent = "Leaderboard unavailable";
       $("board-error").textContent = "Couldn’t reach the server. Reload the page to try again.";

@@ -458,7 +458,9 @@ def run_body(row, song):
 
 
 def get_leaderboard(handler, db, query):
-    user = handler.require_user(db)
+    # Public: anyone can read the board; "me" and "recent" need a session.
+    user = handler.current_user(db)
+    user_id = user["id"] if user else None
     catalog = songs()
     song_id = (query.get("song") or [next(iter(catalog), "")])[0]
     song = catalog.get(song_id)
@@ -466,20 +468,20 @@ def get_leaderboard(handler, db, query):
         raise ApiError(HTTPStatus.NOT_FOUND, "unknown_song")
     entries, me = [], None
     for index, row in enumerate(db.execute(BEST_PER_USER, (song_id,)), 1):
-        entry = {"rank": index, "name": row["name"], "you": row["user_id"] == user["id"],
+        entry = {"rank": index, "name": row["name"], "you": row["user_id"] == user_id,
                  **run_body(row, song)}
         if index <= BOARD_SIZE:
             entries.append(entry)
         if entry["you"]:
             me = entry
-    recent = [
+    recent = [] if user is None else [
         {"song_id": row["song_id"], "title": catalog.get(row["song_id"], {}).get("title", row["song_id"]),
          **run_body(row, catalog.get(row["song_id"]))}
         for row in db.execute("SELECT * FROM runs WHERE user_id = ? AND finished_at IS NOT NULL "
                               "ORDER BY finished_at DESC LIMIT 10", (user["id"],))
     ]
     return HTTPStatus.OK, {
-        "user": user_body(user),
+        "user": user_body(user) if user else None,
         "songs": [{"id": key, "title": value["title"], "notes": value["notes"]} for key, value in catalog.items()],
         "song": {"id": song_id, "title": song["title"], "notes": song["notes"]},
         "entries": entries,

@@ -113,7 +113,8 @@ class ApiTest(unittest.TestCase):
         status, body = client.call("POST", "/api/signup", {"username": "mallory"}, origin="https://evil.example")
         self.assertEqual((status, body["error"]), (403, "bad_origin"))
         self.assertEqual(client.call("POST", "/api/runs/start", {"song_id": "short"})[1]["error"], "login_required")
-        self.assertEqual(client.call("GET", "/api/leaderboard")[0], 401)
+        status, board = client.call("GET", "/api/leaderboard")
+        self.assertEqual((status, board["user"], board["me"], board["recent"]), (200, None, None, []))
 
     def test_signup_rate_limit(self):
         client = Client("10.0.3.1")
@@ -158,6 +159,11 @@ class ApiTest(unittest.TestCase):
         self.assertEqual([r["score"] for r in board["recent"]], [500, 600, 850])
         self.assertEqual([s["id"] for s in board["songs"]], ["short", "long"])
         self.assertEqual(bob.call("GET", "/api/leaderboard?song=zzz")[0], 404)
+        # Logged-out visitors see the same board, without "you", "me" or recent runs.
+        status, public = Client("10.0.4.3").call("GET", "/api/leaderboard?song=short")
+        self.assertEqual(status, 200)
+        self.assertEqual([(e["name"], e["you"]) for e in public["entries"]], [("cara", False), ("bob", False)])
+        self.assertEqual((public["me"], public["recent"]), (None, []))
 
     def test_plausible(self):
         self.assertTrue(api.plausible(10, 1000, 0, 10))

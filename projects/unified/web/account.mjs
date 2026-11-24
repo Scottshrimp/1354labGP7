@@ -241,14 +241,8 @@ export function mountAccountNav(nav, { leaderboard: showLeaderboard = true } = {
     <span class="account-user" data-account="user" hidden></span>
     <button type="button" class="account-link" data-account="logout" hidden>Log out</button>`;
   const pick = (name) => nav.querySelector(`[data-account="${name}"]`);
-  const leaderboard = pick("leaderboard");
-  leaderboard.hidden = !showLeaderboard;
-  leaderboard.addEventListener("click", (event) => {
-    if (user) return;
-    // Logged out: the same sign-up dialog as the Sign up button.
-    event.preventDefault();
-    openAuth("signup");
-  });
+  // The leaderboard is public, so the link always opens it.
+  pick("leaderboard").hidden = !showLeaderboard;
   pick("signup").addEventListener("click", () => openAuth("signup"));
   pick("logout").addEventListener("click", async () => {
     try { await api("logout", {}); } catch { /* the cookie expires on its own */ }

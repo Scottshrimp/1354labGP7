@@ -1070,14 +1070,19 @@ button.auth-close:not(:disabled):hover svg { transform: none; }
 /* ---------- Leaderboard page ---------- */
 
 .board-gate {
-  max-width: 36rem;
-  padding: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 24px;
+  margin-bottom: 22px;
+  padding: 20px 22px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
   box-shadow: var(--shadow);
 }
-.board-gate p { margin: 0 0 16px; color: var(--muted); }
+.board-gate p { flex: 1 1 22rem; margin: 0; color: var(--muted); }
 .board-gate-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .board-gate-actions .secondary { background: transparent; color: var(--text); box-shadow: 0 0 0 1px var(--line-strong) inset; }
 

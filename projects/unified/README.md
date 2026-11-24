@@ -187,6 +187,8 @@ and restarts `rhythmhit-api.service` together with each site release.
 - Only finished solo runs of a logged-in player are recorded. Scores come
   from the browser, so the server checks them for consistency (score range,
   combo bound, minimum play time) but cannot prove them genuine.
+- `/leaderboard/` is public. Logged-out visitors see every song's board and
+  a sign-up prompt; logged-in players also get their rank and recent runs.
 - Turnstile keys live in `/etc/rhythmhit/api.env` (see
   `deploy/rhythmhit-api.env.example`). Without keys the account links stay
   hidden.
